@@ -1,0 +1,16 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const html = fs.readFileSync('index.html','utf8');
+for(const id of ['como','sobre','ajuda','access-form','access-dialog']) assert(html.includes(`id="${id}"`));
+for(const match of html.matchAll(/(?:src|href)="(assets\/[^"]+)"/g)) assert(fs.existsSync(match[1]),match[1]);
+assert(!html.includes('data:image/'));
+const source=fs.readFileSync('app.js','utf8');
+const fn=source.slice(source.indexOf('function validCpf'),source.indexOf('cpf.addEventListener'));
+const ctx={}; vm.createContext(ctx); vm.runInContext(fn,ctx);
+assert.equal(ctx.validCpf('111.111.111-11'),false);
+assert.equal(ctx.validCpf('123'),false);
+assert.equal(ctx.validCpf('529.982.247-25'),true);
+assert.equal(ctx.validCpf('529.982.247-26'),false);
+assert(!/fetch\(|localStorage|sessionStorage|XMLHttpRequest/.test(source));
+console.log('PASS: seções, referências locais, validação de CPF e ausência de transmissão/persistência.');

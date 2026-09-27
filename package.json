@@ -1,0 +1,1 @@
+{"name":"portal-leal","version":"1.0.0","private":true,"scripts":{"start":"node server.cjs","build":"node assemble.cjs","check":"node --check app.js && node --check server.cjs"}}

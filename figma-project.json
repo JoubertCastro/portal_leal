@@ -1,0 +1,56 @@
+{
+  "fileKey": "AjfhokM2qBi9Uzn7Ht5USj",
+  "url": "https://www.figma.com/design/AjfhokM2qBi9Uzn7Ht5USj",
+  "state": {
+    "fonts": [
+      "Manrope"
+    ],
+    "overflows": [],
+    "frames": [
+      {
+        "id": "2:32",
+        "width": 1440,
+        "height": 2655
+      },
+      {
+        "id": "2:33",
+        "width": 390,
+        "height": 3953
+      }
+    ],
+    "nodes": [
+      {
+        "id": "2:32",
+        "name": "Desktop • Início"
+      },
+      {
+        "id": "2:33",
+        "name": "Mobile • Início"
+      },
+      {
+        "id": "2:34",
+        "name": "Acesso • CPF"
+      },
+      {
+        "id": "2:35",
+        "name": "Acesso • Código"
+      },
+      {
+        "id": "2:36",
+        "name": "Acesso • Ajuda"
+      },
+      {
+        "id": "3:2",
+        "name": "Biblioteca • Controles"
+      },
+      {
+        "id": "3:43",
+        "name": "Card / Etapa"
+      },
+      {
+        "id": "4:48",
+        "name": "Leia primeiro • Escopo e decisões"
+      }
+    ]
+  }
+}
