@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "node scripts/start.mjs",
     "check": "next typegen && tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint src tests scripts next.config.ts playwright.config.ts eslint.config.mjs",
     "test": "tsx --conditions=react-server --test tests/*.test.ts",
     "test:e2e": "playwright test"
   },
@@ -22,6 +22,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.63.0",
     "@types/node": "26.6.3",
     "@types/react": "19.3.0",

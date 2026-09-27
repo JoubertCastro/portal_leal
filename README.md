@@ -31,7 +31,7 @@ Copie `.env.example` para `.env.local` para configuração futura. Configure `AP
 
 ## Arquitetura e publicação
 
-Leia [a arquitetura](docs/architecture.md) e [as integrações](docs/integrations.md). O workflow de CI executa lint, tipos, testes, build e jornadas desktop/mobile sem credenciais reais.
+Leia [a arquitetura](docs/architecture.md), [as integrações](docs/integrations.md) e [a pesquisa e direção visual](docs/design-direction.md). O workflow de CI executa lint, tipos, testes, build e jornadas desktop/mobile sem credenciais reais. Os testes de interface incluem verificações automáticas de acessibilidade, teclado e largura de 320px; não substituem avaliações com usuários reais.
 
 Este checkpoint pode ser publicado como prévia. Produção transacional depende dos critérios documentados. O build usa `output: standalone`; `npm start` prepara os ativos e inicia esse servidor (padrão local: 127.0.0.1:4174). Na hospedagem configure HOSTNAME=0.0.0.0 e PORT conforme o ambiente. Em imagens imutáveis, copie public e .next/static para o standalone na etapa de build e execute diretamente node .next/standalone/server.js.
 

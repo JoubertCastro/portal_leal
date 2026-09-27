@@ -1,72 +1,204 @@
-/* Public access: original photography and trust content, scoped away from the client area. */
-.access-navigation { display: flex; align-items: center; gap: 28px; font-size: 13px; }
-.access-navigation > a { padding-block: 12px; }
-.access-page .access-layout { width: min(1200px, 90%); margin: 18px auto 0; grid-template-columns: 1.1fr 1fr; }
-.access-page .access-card { order: 2; padding: 46px 48px; background: linear-gradient(140deg, #fff, #fcfbf6); }
-.access-page .welcome-panel { order: 1; padding: 0; justify-content: flex-start; background: #343d2f; }
-.access-page .welcome-panel:before { display: none; }
-.welcome-photo { position: relative; min-height: 290px; flex: 1; }
-.welcome-photo img { object-fit: cover; object-position: center 42%; }
-.welcome-photo:after { content: ''; position: absolute; inset: 55% 0 0; background: linear-gradient(transparent, #343d2f); }
-.heritage-label { position: absolute; top: 22px; left: 28px; background: #ffffffeb; color: #514622; padding: 9px 12px; border-radius: 5px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; }
-.access-page .welcome-content { padding: 12px 36px 32px; }
-.access-page .welcome-content .eyebrow { color: #e8d9a6; font-size: 10px; margin-bottom: 12px; }
-.access-page .welcome-content h2 { font-size: clamp(28px, 2.7vw, 36px); margin-bottom: 16px; }
-.access-page .welcome-content p { max-width: 420px; font-size: 14px; margin-bottom: 20px; }
-.welcome-benefits { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; flex-wrap: wrap; color: #ede8d5; font-size: 11px; }
-.welcome-benefits li:before { content: '✓'; color: #d5c58b; margin-right: 6px; }
-.partners-section { width: min(1200px, 90%); margin: 24px auto 0; padding: 30px 32px; background: white; border: 1px solid var(--line); border-radius: 16px; }
-.partners-heading { text-align: center; }
-.partners-heading .eyebrow { font-size: 9px; margin-bottom: 8px; }
-.partners-heading h2 { font-size: 20px; font-weight: 600; margin-bottom: 26px; letter-spacing: -.3px; }
-.partner-grid { list-style: none; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; gap: 28px; padding: 0; margin: 0; }
-.partner-grid li { display: flex; justify-content: center; align-items: center; height: 54px; }
-.partner-grid img { width: 100%; max-width: 140px; height: 54px; object-fit: contain; }
-.portal-steps, .access-faq { width: min(1120px, 90%); margin: 0 auto; padding: 64px 0; }
-.trust-section-heading h2, .access-faq h2 { font-size: 30px; letter-spacing: -.8px; line-height: 1.25; }
-.trust-section-heading .eyebrow { margin-bottom: 12px; }
-.portal-step-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
-.portal-step-grid article { border-top: 1px solid #d8d7c8; padding-top: 22px; }
-.step-number { color: var(--brand); font-size: 13px; font-weight: 700; }
-.portal-step-grid h3 { margin: 12px 0 8px; font-size: 18px; }
-.portal-step-grid p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 310px; margin-bottom: 0; }
-.steps-caption { color: var(--muted); font-size: 11px; margin: 24px 0 0; }
-.company-section { width: min(1200px, 90%); margin: 0 auto; background: #eae7d9; border-radius: 16px; padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
-.company-section .eyebrow { margin-bottom: 16px; }
-.company-section h2 { font-size: 30px; font-weight: 500; letter-spacing: -.8px; line-height: 1.3; margin-bottom: 0; }
-.company-section p { color: #5d5c4f; font-size: 14px; line-height: 1.8; }
-.company-section a, .access-faq a { color: #5e5028; display: inline-block; padding: 8px 0; font-size: 14px; font-weight: 700; }
-.access-faq { display: grid; grid-template-columns: 1fr 1.5fr; gap: 70px; }
-.access-questions details { border-bottom: 1px solid #d8d7c8; padding: 0 0 18px; margin-bottom: 18px; }
-.access-questions summary { font-size: 14px; font-weight: 600; padding: 6px 24px 6px 0; }
-.access-questions p { color: var(--muted); font-size: 14px; line-height: 1.7; margin: 14px 0 0; }
-.experience-preview { width: min(1120px, 90%); margin: 0 auto 36px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 24px 0; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-.experience-preview strong { font-size: 15px; }
-.experience-preview p { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
-.access-page .site-footer { padding-bottom: 28px; }
-@media (max-width: 1000px) { .access-page .access-card { padding: 36px 28px; } .access-page .welcome-content { padding: 16px 28px 28px; } .welcome-benefits { gap: 10px; } .partner-grid { gap: 18px; } .company-section { gap: 32px; padding: 32px; } .access-navigation { gap: 18px; } }
-@media (max-width: 750px) { .access-navigation > a:not(.header-help) { display: none; } .partner-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; } .access-faq { gap: 30px; } }
-@media (max-width: 650px) {
-  .access-page .access-layout { width: calc(100% - 32px); grid-template-columns: 1fr; margin-top: 8px; }
-  .access-page .access-card { order: 1; padding: 30px 24px; }
-  .access-page .welcome-panel { order: 2; }
-  .welcome-photo { min-height: 235px; flex: none; }
-  .heritage-label { top: 18px; left: 20px; font-size: 9px; }
-  .access-page .welcome-content { padding: 12px 24px 28px; }
-  .access-page .welcome-content h2 { font-size: 28px; }
-  .partners-section { width: calc(100% - 32px); padding: 26px 20px; margin-top: 16px; }
-  .partners-heading h2 { font-size: 18px; }
-  .partner-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-  .partner-grid img { max-width: 110px; height: 46px; }
-  .partner-grid li { height: 46px; }
-  .partner-grid li:last-child { grid-column: 1 / -1; }
-  .portal-steps, .access-faq { width: calc(100% - 48px); padding: 40px 0; }
-  .trust-section-heading h2, .access-faq h2, .company-section h2 { font-size: 26px; }
-  .portal-step-grid { grid-template-columns: 1fr; gap: 22px; }
-  .portal-step-grid p { max-width: none; }
-  .company-section { width: calc(100% - 32px); grid-template-columns: 1fr; gap: 20px; padding: 28px 24px; }
-  .access-faq { grid-template-columns: 1fr; gap: 24px; }
-  .access-faq h2 br { display: none; }
-  .experience-preview { width: calc(100% - 48px); align-items: flex-start; flex-direction: column; gap: 16px; }
-  .access-page .site-footer div { gap: 14px; flex-wrap: wrap; justify-content: center; }
+/* Leal public portal: editorial typography, accessible actions and original photography. */
+.access-page { --ink: #26372d; --muted: #62695e; --brand: #645628; --line: #dddcd0; --paper: #f6f5ef; background: var(--paper); }
+.access-page .site-header { position: sticky; top: 0; z-index: 20; max-width: none; min-height: 90px; padding: 12px max(5vw, calc((100vw - 1240px) / 2)); background: #f6f5effa; border-bottom: 1px solid #e7e6dc; }
+.access-page .brand { gap: 18px; font-size: 12px; }
+.access-page .brand img { width: 105px; height: 58px; }
+.access-navigation { display: flex; align-items: center; gap: 32px; font-size: 13px; font-weight: 500; }
+.access-navigation > a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; }
+.access-navigation svg { width: 18px; height: 18px; }
+.access-navigation .header-help { font-size: 13px; padding: 10px 0; }
+.access-navigation .header-access { background: #273c30; color: #fff; padding: 10px 18px; border-radius: 7px; }
+.access-page .access-layout { width: min(1240px, 90%); margin: 48px auto 54px; display: grid; grid-template-columns: 1.18fr 1fr; grid-template-rows: auto 1fr; gap: 26px 72px; background: none; border: 0; border-radius: 0; overflow: visible; box-shadow: none; align-items: start; }
+.hero-intro { grid-column: 1; grid-row: 1; padding-top: 8px; }
+.hero-intro .eyebrow { display: flex; align-items: center; gap: 12px; letter-spacing: 1.7px; font-size: 10px; margin-bottom: 20px; }
+.eyebrow-line { width: 26px; height: 1px; background: #8d7d4c; }
+.hero-intro h2 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(38px, 3.7vw, 56px); font-weight: 400; line-height: 1.1; letter-spacing: -2px; margin: 0 0 20px; }
+.hero-intro h2 em { color: #776539; font-weight: 400; }
+.hero-intro p { color: var(--muted); font-size: 15px; line-height: 1.75; max-width: 440px; margin: 0; }
+.hero-portrait { grid-column: 1; grid-row: 2; position: relative; width: calc(100% - 22px); height: 300px; margin: 8px 0 0; border-radius: 16px 80px 16px 16px; isolation: isolate; }
+.hero-portrait > img { object-fit: cover; object-position: center 40%; border-radius: inherit; }
+.hero-portrait:after { content: ''; position: absolute; inset: 50% 0 0; z-index: 0; border-radius: 0 0 16px 16px; background: linear-gradient(transparent, #17271eae); pointer-events: none; }
+.hero-portrait figcaption { position: absolute; bottom: 22px; left: 24px; right: 24px; z-index: 1; display: flex; justify-content: space-between; align-items: center; color: white; font-size: 17px; line-height: 1.4; }
+.hero-portrait figcaption strong { font-weight: 500; }
+.photo-arrow { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #ffffff8c; display: grid; place-items: center; font-size: 24px; }
+.heritage-seal { position: absolute; z-index: 2; top: -21px; right: -22px; width: 100px; height: 100px; border-radius: 50%; border: 6px solid var(--paper); background: #e6e9cf; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #334633; transform: rotate(8deg); }
+.heritage-seal span { font-size: 7px; letter-spacing: 1.1px; font-weight: 600; }
+.heritage-seal strong { font-family: Georgia, serif; font-size: 28px; font-weight: 400; line-height: 1.4; }
+.access-page .access-card { grid-column: 2; grid-row: 1 / 3; padding: 32px 36px 22px; background: #fff; border: 1px solid #dedfd4; border-radius: 18px; box-shadow: 0 16px 48px #253a2810; position: relative; }
+.access-page .access-card:before { content: ''; position: absolute; top: -1px; left: 36px; width: 60px; height: 3px; background: #a89a63; border-radius: 3px; }
+.access-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; font-size: 9px; font-weight: 700; letter-spacing: 1.6px; color: #68725f; }
+.access-emblem { width: 36px; height: 36px; background: #f1f3e7; border-radius: 10px; display: grid; place-items: center; color: #5c6d4c; }
+.access-emblem svg { width: 20px; height: 20px; }
+.card-corner { margin-left: auto; font-size: 20px; color: #809074; }
+.access-page .access-card h1 { font-size: 30px; font-weight: 600; letter-spacing: -1.2px; margin-bottom: 10px; }
+.access-page .lead { font-size: 14px; line-height: 1.65; margin-bottom: 22px; max-width: 300px; }
+.access-progress { list-style: none; padding: 0 0 20px; margin: 0 0 22px; display: flex; border-bottom: 1px solid #ecece4; gap: 24px; font-size: 11px; color: #6b7065; }
+.access-progress li { display: flex; align-items: center; gap: 8px; }
+.access-progress li > span { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1px solid #ccd1c5; font-size: 10px; }
+.access-progress li[aria-current=step] { color: #334b37; font-weight: 600; }
+.access-progress li[aria-current=step] > span { background: #344b37; color: white; border-color: #344b37; }
+.access-page .access-form label { font-size: 13px; margin-bottom: 10px; }
+.access-page .access-form input { border-color: #c8cec0; border-radius: 8px; background: #fdfefa; font-size: 17px; min-height: 54px; letter-spacing: 1px; scroll-margin-top: 120px; }
+.access-page .access-form input[aria-invalid=true] { border-color: #a4372c; }
+.access-page .field-hint { display: flex; align-items: center; gap: 7px; font-size: 11px; margin: 12px 0 22px; }
+.access-page .field-hint svg { flex: 0 0 auto; width: 16px; height: 16px; }
+.access-page .access-form .primary { background: #304633; min-height: 54px; border-radius: 8px; font-size: 14px; }
+.access-page .access-form .primary:hover { background: #203526; }
+.access-page .access-form .primary svg { width: 19px; height: 19px; flex-shrink: 0; }
+.access-page .privacy-note { font-size: 11px; line-height: 1.6; margin-top: 16px; }
+.access-page .privacy-note svg { width: 17px; height: 17px; flex: 0 0 auto; color: #68785e; }
+.access-page .access-support { display: flex; align-items: center; gap: 14px; margin-top: 24px; padding-top: 20px; }
+.access-page .access-support > svg { width: 24px; height: 24px; color: #69785d; }
+.access-page .access-support p { margin-bottom: 0; font-size: 12px; }
+.access-page .access-support a { font-size: 12px; min-height: 32px; padding-block: 6px; }
+.availability-note { display: flex; align-items: center; gap: 7px; background: #f7f5eb; border-radius: 5px; color: #706338; padding: 9px 10px; font-size: 10px; margin: 15px 0 0; }
+.partners-section { width: min(1240px, 90%); margin: 0 auto; padding: 28px 0 36px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.partners-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; margin-bottom: 24px; }
+.partners-heading .eyebrow { font-size: 9px; margin: 4px 0; }
+.partners-heading h2 { font-size: 15px; font-weight: 500; line-height: 1.6; margin: 0; text-align: right; }
+.partners-heading h2 span { color: var(--muted); }
+.partner-grid { list-style: none; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 22px; padding: 0; margin: 0; }
+.partner-grid li { min-width: 0; display: flex; justify-content: center; align-items: center; height: 72px; background: white; border: 1px solid #e8e9df; border-radius: 9px; padding: 12px; }
+.partner-grid img { width: 100%; max-width: 115px; height: 44px; object-fit: contain; }
+.portal-steps, .access-faq { width: min(1240px, 90%); margin: 0 auto; padding: 76px 0; }
+.trust-section-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; margin-bottom: 32px; }
+.trust-section-heading h2, .access-faq h2, .company-section h2 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(30px, 3vw, 42px); font-weight: 400; letter-spacing: -1px; line-height: 1.16; margin: 0; }
+.trust-section-heading h2 em, .access-faq h2 em { color: #78673e; }
+.trust-section-heading > p { font-size: 13px; line-height: 1.8; color: var(--muted); margin: 0 0 4px; }
+.trust-section-heading .eyebrow { margin-bottom: 16px; font-size: 10px; }
+.portal-step-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.portal-step-grid article { background: #eeeee4; padding: 28px; border-radius: 13px; border: 1px solid #e3e4d7; display: flex; flex-direction: column; }
+.portal-step-grid article:nth-child(2) { background: #e8ebde; }
+.portal-step-grid article:nth-child(3) { background: #ede8dc; }
+.step-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; color: #5d704e; }
+.step-top > svg { width: 26px; height: 26px; }
+.step-number { font-size: 9px; letter-spacing: 1px; color: #606a52; }
+.portal-step-grid h3 { font-size: 24px; line-height: 1.25; font-weight: 500; letter-spacing: -.7px; margin: 0 0 14px; }
+.portal-step-grid p { color: #5e6657; font-size: 13px; line-height: 1.75; margin: 0 0 24px; max-width: 290px; }
+.step-bottom { margin-top: auto; border-top: 1px solid #d4d8c5; padding-top: 16px; display: flex; justify-content: space-between; align-items: center; color: #4a5c40; font-size: 11px; }
+.step-bottom svg { width: 17px; height: 17px; }
+.steps-caption { color: var(--muted); font-size: 11px; margin: 20px 0 0; }
+.company-section { width: min(1240px, 90%); margin: 0 auto; background: #2d4032; color: #f6f5eb; border-radius: 16px; padding: 54px 56px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 60px; position: relative; overflow: hidden; }
+.company-section:before { content: ''; position: absolute; width: 370px; height: 370px; left: -100px; top: 42px; border: 1px solid #ffffff16; border-radius: 50%; pointer-events: none; }
+.company-history { position: relative; border-right: 1px solid #ffffff26; display: flex; flex-direction: column; justify-content: space-between; }
+.company-section .eyebrow { color: #d8d0a6; font-size: 10px; }
+.history-year { font-family: Georgia, serif; font-size: 104px; letter-spacing: -6px; line-height: 1.1; color: #e6e4c7; margin-top: 26px; }
+.history-year span { display: block; font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; letter-spacing: 0; margin-top: 12px; color: #d5ddcb; }
+.company-section h2 { font-size: 36px; }
+.company-section h2 em { color: #d6dcb5; }
+.company-section p { color: #d3dccd; font-size: 14px; line-height: 1.8; margin: 22px 0 14px; max-width: 480px; }
+.company-section a { color: #f0e6b7; display: inline-flex; align-items: center; gap: 24px; min-height: 44px; font-size: 13px; }
+.company-section a svg { width: 18px; height: 18px; }
+.access-faq { display: grid; grid-template-columns: 1fr 1.35fr; gap: 80px; }
+.access-faq .eyebrow { font-size: 10px; }
+.faq-intro { font-size: 13px; color: var(--muted); margin: 20px 0 12px; }
+.access-faq a { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: var(--brand); font-size: 13px; font-weight: 600; }
+.access-faq a svg { width: 18px; height: 18px; }
+.access-questions details { border-bottom: 1px solid var(--line); padding: 6px 0; }
+.access-questions details:first-child { border-top: 1px solid var(--line); }
+.access-questions summary { font-size: 14px; font-weight: 500; list-style: none; padding: 21px 36px 21px 0; position: relative; }
+.access-questions summary::-webkit-details-marker { display: none; }
+.access-questions summary:after { content: '+'; position: absolute; right: 3px; top: 17px; color: #6a765e; font-size: 24px; font-weight: 300; }
+.access-questions details[open] summary:after { content: '−'; }
+.access-questions p { color: var(--muted); font-size: 14px; line-height: 1.8; margin: 0 26px 20px 0; }
+.experience-preview { width: min(1240px, 90%); margin: 0 auto 34px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 30px 0; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.experience-preview .eyebrow { font-size: 9px; margin-bottom: 10px; }
+.experience-preview strong { font-size: 21px; font-weight: 500; letter-spacing: -.5px; }
+.experience-preview p { font-size: 12px; color: var(--muted); margin: 8px 0 0; }
+.experience-preview .button { background: transparent; border-color: #bfc5b4; color: #334a36; min-height: 48px; font-size: 12px; }
+.experience-preview .button svg { width: 17px; height: 17px; }
+.access-page .site-footer { width: min(1240px, 90%); padding-bottom: 24px; font-size: 11px; }
+.access-page .site-footer a { display: inline-flex; align-items: center; min-height: 32px; }
+.access-page a, .access-page button, .access-page input { transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+.access-page a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.access-page .button:hover, .access-page .header-access:hover { text-decoration: none; box-shadow: 0 3px 12px #263b2512; }
+.access-page a:focus-visible, .access-page button:focus-visible, .access-page input:focus-visible, .access-page summary:focus-visible { outline: 3px solid #80702b; outline-offset: 4px; }
+.access-page section[id] { scroll-margin-top: 112px; }
+@media (max-width: 1100px) {
+  .access-page .access-layout { gap: 24px 36px; grid-template-columns: 1fr 1fr; }
+  .hero-intro h2 { font-size: 42px; }
+  .access-page .access-card { padding: 28px; }
+  .hero-portrait { height: 300px; }
+  .access-navigation { gap: 20px; }
+  .partner-grid { gap: 10px; }
+  .company-section { padding: 40px; gap: 40px; }
 }
+@media (max-width: 900px) {
+  .access-navigation .section-nav { display: none; }
+  .hero-intro h2 { font-size: 36px; letter-spacing: -1px; }
+  .hero-intro .eyebrow { font-size: 8px; letter-spacing: 1px; }
+  .access-page .access-card { padding: 26px 22px 20px; }
+  .access-page .access-card h1 { font-size: 27px; }
+  .access-page .field-hint { align-items: flex-start; }
+  .partner-grid li { padding: 9px; }
+  .portal-step-grid article { padding: 22px; }
+  .step-number { font-size: 8px; letter-spacing: .5px; }
+}
+@media (max-width: 760px) {
+  .access-page .access-layout { grid-template-columns: 1fr; gap: 0; width: min(540px, calc(100% - 32px)); margin: 24px auto 38px; }
+  .access-page .access-card { grid-column: 1; grid-row: 1; padding: 28px; }
+  .hero-intro { grid-column: 1; grid-row: 2; padding: 0 8px; margin-top: 42px; }
+  .hero-intro h2 { font-size: 39px; }
+  .hero-intro .eyebrow { font-size: 9px; margin-bottom: 18px; }
+  .hero-intro p { font-size: 14px; }
+  .hero-portrait { grid-column: 1; grid-row: 3; width: calc(100% - 12px); height: 260px; margin-top: 28px; }
+  .heritage-seal { width: 86px; height: 86px; right: -12px; top: -18px; }
+  .heritage-seal span { font-size: 6px; }
+  .heritage-seal strong { font-size: 25px; }
+  .partners-heading { align-items: flex-start; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .partners-heading h2 { text-align: left; font-size: 17px; }
+  .partner-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .partner-grid li { height: 62px; }
+  .partner-grid img { height: 38px; }
+  .portal-steps, .access-faq { padding: 48px 0; }
+  .trust-section-heading { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .trust-section-heading h2, .access-faq h2 { font-size: 34px; }
+  .portal-step-grid { grid-template-columns: 1fr; gap: 14px; }
+  .portal-step-grid article { padding: 24px; }
+  .step-top { margin-bottom: 18px; }
+  .step-number { font-size: 10px; }
+  .portal-step-grid h3 { font-size: 24px; }
+  .portal-step-grid h3 br { display: none; }
+  .portal-step-grid p { max-width: none; font-size: 14px; }
+  .step-bottom { font-size: 12px; }
+  .company-section { grid-template-columns: 1fr; padding: 32px 28px; gap: 30px; }
+  .company-history { border-right: 0; border-bottom: 1px solid #ffffff26; padding-bottom: 26px; }
+  .history-year { font-size: 80px; margin-top: 0; }
+  .company-section h2 { font-size: 31px; }
+  .access-faq { grid-template-columns: 1fr; gap: 28px; }
+  .experience-preview { align-items: flex-start; flex-direction: column; }
+  .access-page .site-footer { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+@media (max-width: 650px) {
+  .access-page .site-header { padding: 8px 18px; min-height: 76px; }
+  .access-page .brand { gap: 0; }
+  .access-page .brand img { width: 84px; height: 52px; }
+  .access-page .brand > span { display: none; }
+  .access-navigation { gap: 18px; }
+  .access-navigation .header-help { font-size: 12px; }
+  .access-navigation .header-help svg { display: none; }
+  .access-navigation .header-access { font-size: 11px; min-height: 42px; padding: 10px 12px; }
+  .access-navigation .header-access svg { width: 14px; }
+  .access-page .access-layout { margin-top: 18px; }
+  .access-page .access-card { padding: 25px 24px 20px; }
+  .access-card-top { margin-bottom: 20px; font-size: 8px; }
+  .access-page .access-card h1 { font-size: 29px; }
+  .access-page .lead { font-size: 14px; margin-bottom: 20px; }
+  .access-progress { margin-bottom: 20px; padding-bottom: 18px; }
+  .access-page .access-form label { font-size: 14px; }
+  .access-page .access-form input { scroll-margin-top: 96px; }
+  .access-page .access-form .primary { font-size: 14px; }
+  .access-page .privacy-note { font-size: 11px; }
+  .access-page .access-support { margin-top: 20px; padding-top: 18px; }
+  .availability-note { font-size: 10px; }
+  .hero-intro h2 { font-size: 36px; }
+  .hero-portrait { height: 235px; }
+  .hero-portrait figcaption { font-size: 16px; bottom: 18px; left: 20px; }
+  .partners-section, .portal-steps, .company-section, .access-faq, .experience-preview, .access-page .site-footer { width: calc(100% - 40px); }
+  .partner-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .partner-grid li:last-child { grid-column: 1 / -1; }
+  .partner-grid img { max-width: 110px; }
+  .access-page .site-footer div { flex-wrap: wrap; gap: 14px; }
+  .access-page section[id] { scroll-margin-top: 92px; }
+}
+@media (prefers-reduced-motion: reduce) { .access-page *, .access-page *:before, .access-page *:after { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
