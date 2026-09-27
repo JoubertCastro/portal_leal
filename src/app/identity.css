@@ -1,0 +1,72 @@
+/* Public access: original photography and trust content, scoped away from the client area. */
+.access-navigation { display: flex; align-items: center; gap: 28px; font-size: 13px; }
+.access-navigation > a { padding-block: 12px; }
+.access-page .access-layout { width: min(1200px, 90%); margin: 18px auto 0; grid-template-columns: 1.1fr 1fr; }
+.access-page .access-card { order: 2; padding: 46px 48px; background: linear-gradient(140deg, #fff, #fcfbf6); }
+.access-page .welcome-panel { order: 1; padding: 0; justify-content: flex-start; background: #343d2f; }
+.access-page .welcome-panel:before { display: none; }
+.welcome-photo { position: relative; min-height: 290px; flex: 1; }
+.welcome-photo img { object-fit: cover; object-position: center 42%; }
+.welcome-photo:after { content: ''; position: absolute; inset: 55% 0 0; background: linear-gradient(transparent, #343d2f); }
+.heritage-label { position: absolute; top: 22px; left: 28px; background: #ffffffeb; color: #514622; padding: 9px 12px; border-radius: 5px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; }
+.access-page .welcome-content { padding: 12px 36px 32px; }
+.access-page .welcome-content .eyebrow { color: #e8d9a6; font-size: 10px; margin-bottom: 12px; }
+.access-page .welcome-content h2 { font-size: clamp(28px, 2.7vw, 36px); margin-bottom: 16px; }
+.access-page .welcome-content p { max-width: 420px; font-size: 14px; margin-bottom: 20px; }
+.welcome-benefits { list-style: none; display: flex; gap: 20px; padding: 0; margin: 0; flex-wrap: wrap; color: #ede8d5; font-size: 11px; }
+.welcome-benefits li:before { content: '✓'; color: #d5c58b; margin-right: 6px; }
+.partners-section { width: min(1200px, 90%); margin: 24px auto 0; padding: 30px 32px; background: white; border: 1px solid var(--line); border-radius: 16px; }
+.partners-heading { text-align: center; }
+.partners-heading .eyebrow { font-size: 9px; margin-bottom: 8px; }
+.partners-heading h2 { font-size: 20px; font-weight: 600; margin-bottom: 26px; letter-spacing: -.3px; }
+.partner-grid { list-style: none; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; gap: 28px; padding: 0; margin: 0; }
+.partner-grid li { display: flex; justify-content: center; align-items: center; height: 54px; }
+.partner-grid img { width: 100%; max-width: 140px; height: 54px; object-fit: contain; }
+.portal-steps, .access-faq { width: min(1120px, 90%); margin: 0 auto; padding: 64px 0; }
+.trust-section-heading h2, .access-faq h2 { font-size: 30px; letter-spacing: -.8px; line-height: 1.25; }
+.trust-section-heading .eyebrow { margin-bottom: 12px; }
+.portal-step-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.portal-step-grid article { border-top: 1px solid #d8d7c8; padding-top: 22px; }
+.step-number { color: var(--brand); font-size: 13px; font-weight: 700; }
+.portal-step-grid h3 { margin: 12px 0 8px; font-size: 18px; }
+.portal-step-grid p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 310px; margin-bottom: 0; }
+.steps-caption { color: var(--muted); font-size: 11px; margin: 24px 0 0; }
+.company-section { width: min(1200px, 90%); margin: 0 auto; background: #eae7d9; border-radius: 16px; padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
+.company-section .eyebrow { margin-bottom: 16px; }
+.company-section h2 { font-size: 30px; font-weight: 500; letter-spacing: -.8px; line-height: 1.3; margin-bottom: 0; }
+.company-section p { color: #5d5c4f; font-size: 14px; line-height: 1.8; }
+.company-section a, .access-faq a { color: #5e5028; display: inline-block; padding: 8px 0; font-size: 14px; font-weight: 700; }
+.access-faq { display: grid; grid-template-columns: 1fr 1.5fr; gap: 70px; }
+.access-questions details { border-bottom: 1px solid #d8d7c8; padding: 0 0 18px; margin-bottom: 18px; }
+.access-questions summary { font-size: 14px; font-weight: 600; padding: 6px 24px 6px 0; }
+.access-questions p { color: var(--muted); font-size: 14px; line-height: 1.7; margin: 14px 0 0; }
+.experience-preview { width: min(1120px, 90%); margin: 0 auto 36px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 24px 0; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.experience-preview strong { font-size: 15px; }
+.experience-preview p { font-size: 12px; color: var(--muted); margin: 5px 0 0; }
+.access-page .site-footer { padding-bottom: 28px; }
+@media (max-width: 1000px) { .access-page .access-card { padding: 36px 28px; } .access-page .welcome-content { padding: 16px 28px 28px; } .welcome-benefits { gap: 10px; } .partner-grid { gap: 18px; } .company-section { gap: 32px; padding: 32px; } .access-navigation { gap: 18px; } }
+@media (max-width: 750px) { .access-navigation > a:not(.header-help) { display: none; } .partner-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; } .access-faq { gap: 30px; } }
+@media (max-width: 650px) {
+  .access-page .access-layout { width: calc(100% - 32px); grid-template-columns: 1fr; margin-top: 8px; }
+  .access-page .access-card { order: 1; padding: 30px 24px; }
+  .access-page .welcome-panel { order: 2; }
+  .welcome-photo { min-height: 235px; flex: none; }
+  .heritage-label { top: 18px; left: 20px; font-size: 9px; }
+  .access-page .welcome-content { padding: 12px 24px 28px; }
+  .access-page .welcome-content h2 { font-size: 28px; }
+  .partners-section { width: calc(100% - 32px); padding: 26px 20px; margin-top: 16px; }
+  .partners-heading h2 { font-size: 18px; }
+  .partner-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .partner-grid img { max-width: 110px; height: 46px; }
+  .partner-grid li { height: 46px; }
+  .partner-grid li:last-child { grid-column: 1 / -1; }
+  .portal-steps, .access-faq { width: calc(100% - 48px); padding: 40px 0; }
+  .trust-section-heading h2, .access-faq h2, .company-section h2 { font-size: 26px; }
+  .portal-step-grid { grid-template-columns: 1fr; gap: 22px; }
+  .portal-step-grid p { max-width: none; }
+  .company-section { width: calc(100% - 32px); grid-template-columns: 1fr; gap: 20px; padding: 28px 24px; }
+  .access-faq { grid-template-columns: 1fr; gap: 24px; }
+  .access-faq h2 br { display: none; }
+  .experience-preview { width: calc(100% - 48px); align-items: flex-start; flex-direction: column; gap: 16px; }
+  .access-page .site-footer div { gap: 14px; flex-wrap: wrap; justify-content: center; }
+}

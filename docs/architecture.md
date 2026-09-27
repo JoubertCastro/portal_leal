@@ -51,7 +51,7 @@ Separar métricas internas de publicidade. Não transmitir CPF, telefone, códig
 
 ## Experiência e desempenho
 
-Formulário antes do conteúdo auxiliar em mobile. Labels, mensagens de erro, foco visível, navegação por teclado e HTML semântico. Logo com Next Image e dimensões definidas; logos pesados/hero do protótipo não carregam na nova entrada. Fontes de sistema, sem downloads remotos.
+Formulário antes do conteúdo auxiliar em mobile. Labels, mensagens de erro, foco visível, navegação por teclado e HTML semântico. A entrada combina foto e parceiros da versão pré-aprovada com a arquitetura do portal. Imagens via Next Image com dimensões/sizes definidos; foto prioritária e parceiros com carregamento sob demanda. Fontes de sistema, sem downloads remotos.
 
 Playwright cobre desktop e viewport mobile; não substitui aparelhos reais, Safari ou leitor de tela. Medir LCP, INP e CLS em produção, além de testes de carga sem dados reais. Não afirmar pontuação Lighthouse ou capacidade de usuários sem medição.
 

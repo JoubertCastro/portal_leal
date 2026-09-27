@@ -17,7 +17,7 @@ Next.js App Router, React e TypeScript estrito. Entrada centrada no acesso do cl
 - `src/domain`: regras e contratos independentes de banco/provedor.
 - `src/server`: integrações SIC/Meta, segurança e composição server-only.
 - `src/demo`: dados fictícios exclusivos da demonstração.
-- `public/assets`: ativos originais; a nova entrada carrega somente o logo.
+- `public/assets`: foto e marcas da versão pré-aprovada, servidas com dimensionamento e otimização pelo Next Image. A entrada une o acesso ao cliente, parceiros e conteúdo institucional.
 - `legacy`: protótipo preservado como referência, fora do app e do build. Não usar seus scripts para gerar o portal novo.
 - `tests`: regras, integrações simuladas e jornadas E2E.
 
