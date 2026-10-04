@@ -24,6 +24,12 @@ Healthcheck confirma o processo HTTP; não comprova banco, autenticação, Meta 
 
 ## Verificação após publicação
 
+### Teste restrito sem Meta
+
+`/homologacao` permite ao responsável consultar cadastro, dívidas e acordos com uma chave aleatória exclusiva (mínimo 32 caracteres), o documento explicitamente autorizado em `HOMOLOGATION_DOCUMENT` e o código de teste `1234`. Habilitar com `HOMOLOGATION_ENABLED=true` e `HOMOLOGATION_EXPIRES_AT` no máximo 24 horas no futuro. Expira automaticamente, não cria sessão de cliente, não confirma opt-in e não envia mensagens. A chave fica apenas no formulário, nunca em URL ou localStorage. Não utilizar este modo como autenticação de clientes. Desativar a variável após os testes. A proteção de carga em memória destina-se à réplica única de homologação; não serve de rate limiter distribuído para o login futuro.
+
+Diagnóstico administrativo: `npm run sic:check`, com credenciais server-only e `SIC_TEST_DOCUMENT` no ambiente. Saída omite dados pessoais, valores e tokens.
+
 Conferir SHA implantado, build/deployment concluído, HTTPS, resposta de `/api/health`, ativos/imagens e layout desktop/mobile. Verificar origem autorizada nas APIs e rejeição de origem externa; `.env` e arquivos administrativos devem responder 404. Não usar dados reais para simular uma autenticação que ainda está indisponível. Registrar URL e resultado da verificação no checkpoint de publicação.
 
 Referência: [Railway Config as Code](https://docs.railway.com/config-as-code/reference).

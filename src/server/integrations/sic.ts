@@ -75,7 +75,11 @@ export class SicGateway {
   }
   async agreements(scope: RecordScope): Promise<CustomerAgreement[]> {
     assertScope(scope); const document = assertDocument(scope.document);
-    const result = agreementsSchema.safeParse(await this.transport.get(`/${this.server}/acordos/${document}`));
+    const response = await this.transport.get(`/${this.server}/acordos/${document}`);
+    // SIC returns HTTP 200 with this exact sentinel when no agreement exists.
+    // Other objects/errors remain invalid rather than hiding upstream failures.
+    if (response && typeof response === 'object' && !Array.isArray(response) && Object.keys(response).length === 1 && 'error' in response && response.error === 'Acordos não encontrados') return [];
+    const result = agreementsSchema.safeParse(response);
     if (!result.success) throw new IntegrationError('invalid_response');
     sameDocument(result.data, document);
     const records = new Map<string, CustomerAgreement>();
