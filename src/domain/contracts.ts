@@ -2,15 +2,6 @@
 export interface Customer { id: string; externalId: string; displayName: string }
 export interface Debt { id: string; creditor: string; amountCents: number; status: 'open' | 'negotiating' }
 export interface Agreement { id: string; creditor: string; installmentCents: number; installments: number; paidInstallments: number; nextDueDate: string }
-export type Registration = { kind: 'not_found' } | {
-  kind: 'found'; customer: Customer; verifiedWhatsapp: string | null;
-  hasDebt: boolean;
-};
-export interface LealGateway {
-  lookupRegistration(cpf: string): Promise<Registration>;
-  listDebts(customerId: string): Promise<Debt[]>;
-  listAgreements(customerId: string): Promise<Agreement[]>;
-}
 export interface OtpSender { send(to: string, code: string): Promise<void> }
 export interface Session {
   tokenHash: string; customerId: string; createdAt: number; expiresAt: number; revokedAt: number | null;

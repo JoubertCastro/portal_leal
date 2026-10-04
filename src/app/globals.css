@@ -30,6 +30,15 @@ h1 { font-size: clamp(30px, 3vw, 40px); letter-spacing: -1.5px; line-height: 1.1
 .access-form label { font-weight: 600; font-size: 14px; display: block; margin-bottom: 8px; }
 .access-form input { width: 100%; min-height: 56px; border: 1px solid #b5b5a5; border-radius: 9px; padding: 14px 16px; background: #fff; color: var(--ink); }
 .access-form input[aria-invalid=true] { border-color: #a4372c; }
+.document-kind { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.document-kind label { margin-bottom: 0; color: var(--muted); }
+.document-kind select { min-height: 44px; padding: 8px 12px; border: 1px solid #b5b5a5; border-radius: 9px; background: #fff; color: var(--ink); font: inherit; }
+.analytics-preferences { position: fixed; bottom: 12px; left: 12px; z-index: 50; max-width: min(540px, calc(100vw - 24px)); font-size: 13px; }
+.analytics-panel { padding: 20px; background: #fff; color: #20382b; border: 1px solid #b5b5a5; border-radius: 12px; box-shadow: 0 8px 35px #20382b26; max-height: 75vh; overflow-y: auto; }
+.analytics-panel p { margin: 10px 0; line-height: 1.5; }
+.analytics-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.analytics-preferences button { min-height: 44px; padding: 10px 14px; background: #fff; color: #20382b; border: 1px solid #657467; border-radius: 8px; cursor: pointer; font: inherit; }
+.analytics-actions button { flex: 1; }
 .field-hint { font-size: 12px; color: var(--muted); margin: 10px 0 22px; }
 .button { display: inline-flex; justify-content: center; align-items: center; gap: 18px; padding: 14px 20px; border-radius: 9px; font-size: 14px; font-weight: 600; min-height: 48px; border: 1px solid transparent; }
 .primary { background: var(--brand); color: white; }

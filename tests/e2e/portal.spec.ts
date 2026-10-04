@@ -27,6 +27,17 @@ test('demo navigation, details and agreements work without authentication', asyn
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: `test-results/portal-${test.info().project.name}.png`, fullPage: true });
 });
+test('CNPJ accepts numeric and alphanumeric documents without transmitting them', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Tipo de documento').selectOption('cnpj');
+  await page.getByRole('button', { name: 'Continuar com meu CNPJ' }).click();
+  await expect(page.locator('#access-error')).toContainText('Confira o CNPJ');
+  await page.getByLabel('Seu CNPJ', { exact: true }).fill('12ABC34501DE35');
+  const request = page.waitForRequest('**/api/auth/challenges');
+  await page.getByRole('button', { name: 'Continuar com meu CNPJ' }).click();
+  expect((await request).postData()).toBe('{}');
+  await expect(page.locator('#access-error')).toContainText('acesso está em preparação');
+});
 test('private routes fail closed, origin enforced and no false event acknowledgement', async ({ request, page }) => {
   const me = await request.get('/api/me'); expect(me.status()).toBe(401); expect(me.headers()['cache-control']).toBe('no-store');
   expect((await request.post('/api/auth/challenges', { headers: { Origin: 'https://evil.example' } })).status()).toBe(403);
@@ -35,5 +46,7 @@ test('private routes fail closed, origin enforced and no false event acknowledge
   await page.context().addCookies([{ name: 'session', value: 'forged', domain: '127.0.0.1', path: '/' }]);
   await page.goto('/portal'); await expect(page).toHaveURL('http://127.0.0.1:4174/');
   expect((await request.get('/.env')).status()).toBe(404);
+  expect((await request.get('/.env.database-admin.local')).status()).toBe(404);
+  for(const path of ['/api/analytics/consent','/api/analytics/journey','/api/events'])expect((await request.post(path,{headers:{Origin:'https://evil.example'},data:{granted:true}})).status()).toBe(403);
   expect((await request.get('/legacy/app.js')).status()).toBe(404);
 });

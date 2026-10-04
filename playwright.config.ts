@@ -6,5 +6,5 @@ export default defineConfig({
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1000 } } },
     { name: 'mobile', use: { ...devices['iPhone 13'], defaultBrowserType: 'chromium' } },
   ],
-  webServer: { command: 'npm start', url: 'http://127.0.0.1:4174', reuseExistingServer: false, env: { APP_ORIGIN: 'http://127.0.0.1:4174', HOSTNAME: '127.0.0.1', PORT: '4174' }, timeout: 120000 },
+  webServer: { command: 'npm start', url: 'http://127.0.0.1:4174', reuseExistingServer: false, env: { APP_ORIGIN: 'http://127.0.0.1:4174', HOSTNAME: '127.0.0.1', PORT: '4174', ANALYTICS_ENABLED: 'false' }, timeout: 120000 },
 });

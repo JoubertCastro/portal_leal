@@ -23,15 +23,21 @@ Next.js App Router, React e TypeScript estrito. Entrada centrada no acesso do cl
 
 ## Estado funcional
 
-O CPF é validado localmente e **não é enviado** neste checkpoint. A demonstração é pública e identificada; não autentica ninguém. `/portal` redireciona à entrada; `/api/me` retorna 401. Autenticação e analytics retornam 503 para a origem autorizada: não há sucesso simulado nem coleta descartada silenciosamente.
+O CPF/CNPJ é validado localmente e **não é enviado** neste checkpoint. A demonstração é pública e identificada; não autentica ninguém. `/portal` redireciona à entrada; `/api/me` retorna 401. Autenticação e analytics retornam 503 para a origem autorizada: não há sucesso simulado nem coleta descartada silenciosamente.
 
-**Não há autenticação real, envio WhatsApp, consulta de dívidas, pagamento, criação de acordo ou persistência de analytics habilitados.** O adaptador Meta precisa de validação com a conta oficial e template aprovado. Sessões/códigos dependem de armazenamento compartilhado; não usamos memória do processo como substituto do banco.
+**Não há autenticação real, envio WhatsApp, consulta de dívidas, pagamento ou criação de acordo habilitados.** O adaptador Meta precisa de validação com a conta oficial e template aprovado. Sessões/códigos dependem de armazenamento compartilhado; não usamos memória do processo como substituto do banco.
+
+Analytics possui coleta própria com preferência explícita, eventos de jornada e resultados do servidor, repositório PostgreSQL, migrations e views para funil, timeline, campanhas e mapa. A ativação no banco informado está pendente do certificado CA: a tentativa de migration parou em `SELF_SIGNED_CERT_IN_CHAIN` antes de executar SQL. Leia [analytics](docs/analytics.md) para configuração, limites e fontes da pesquisa. Eventos financeiros só serão emitidos quando os fluxos de acesso real estiverem ativos; não há dados simulados no funil real.
+
+Os adaptadores SIC de cadastro, dívidas e acordos estão implementados. O serviço de acesso prepara contatos mascarados, restringe contratos ao telefone selecionado e valida sessões antes de consultas financeiras. Ainda faltam os repositórios compartilhados, emissão/verificação dos desafios e conexão dessa jornada aos handlers/interface. As regras provisórias e a restrição da Meta para cobrança de dívidas estão detalhadas em [integrações](docs/integrations.md).
 
 Copie `.env.example` para `.env.local` para configuração futura. Configure `APP_ORIGIN=http://127.0.0.1:4174` localmente. Nenhuma credencial é necessária para a prévia. Nunca colocar segredos em variáveis `NEXT_PUBLIC_*` ou no Git.
 
 ## Arquitetura e publicação
 
 Leia [a arquitetura](docs/architecture.md), [as integrações](docs/integrations.md) e [a pesquisa e direção visual](docs/design-direction.md). O workflow de CI executa lint, tipos, testes, build e jornadas desktop/mobile sem credenciais reais. Os testes de interface incluem verificações automáticas de acessibilidade, teclado e largura de 320px; não substituem avaliações com usuários reais.
+
+`npm run db:migrate -- --provision` aplica migrations e provisiona papéis separados, usando `.env.database-admin.local` ignorado pelo Git. `npm run analytics:maintenance` executa retenção; agendar diariamente na hospedagem. Os testes de SQL usam PGlite (PostgreSQL em WASM) local, sem modificar o banco Railway.
 
 Este checkpoint pode ser publicado como prévia. Produção transacional depende dos critérios documentados. O build usa `output: standalone`; `npm start` prepara os ativos e inicia esse servidor (padrão local: 127.0.0.1:4174). Na hospedagem configure HOSTNAME=0.0.0.0 e PORT conforme o ambiente. Em imagens imutáveis, copie public e .next/static para o standalone na etapa de build e execute diretamente node .next/standalone/server.js.
 

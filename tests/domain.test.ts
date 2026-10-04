@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validCpf, formatCpf } from '../src/domain/cpf';
-import { analyticsEvent, approvedCampaign } from '../src/domain/analytics';
+import { approvedCampaign } from '../src/domain/analytics';
+import { browserTrackingEvent as analyticsEvent } from '../src/domain/tracking';
 import { newOtp, newSessionToken, sessionHash, otpDigest } from '../src/server/security/tokens';
 
 test('CPF rejects repeated digits, invalid checksum and letters', () => {
@@ -12,7 +13,7 @@ test('CPF rejects repeated digits, invalid checksum and letters', () => {
   assert.equal(formatCpf('52998224725'), '529.982.247-25');
 });
 test('analytics rejects extra personal data and unapproved campaign values', () => {
-  const event = { id: crypto.randomUUID(), name: 'portal_viewed', occurredAt: new Date().toISOString(), journeyId: crypto.randomUUID(), source: 'browser' };
+  const event = { id: crypto.randomUUID(), name: 'portal_viewed', occurredAt: new Date().toISOString() };
   assert.equal(analyticsEvent.safeParse(event).success, true);
   assert.equal(analyticsEvent.safeParse({ ...event, cpf: '52998224725' }).success, false);
   assert.equal(analyticsEvent.safeParse({ ...event, name: 'arbitrary' }).success, false);

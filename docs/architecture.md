@@ -8,11 +8,11 @@ Aplicação modular Next.js/React/TypeScript. Backend for frontend no mesmo depl
 
 ## Implementado
 
-- Entrada responsiva focada no CPF, com estado de indisponibilidade real; nenhuma transmissão de CPF neste checkpoint.
+- Entrada responsiva com CPF/CNPJ, com estado de indisponibilidade real; nenhuma transmissão de documento neste checkpoint.
 - Demonstração com visão geral, pendências/detalhes, acordos e atendimento. Dados fictícios segregados.
 - SIC: validação da resposta de login, token em cache até 30s antes da expiração, login concorrente compartilhado dentro do processo, renovação uma vez em 401. Timeout de 8s, bloqueio de redirecionamentos e erros sem corpo do provedor.
 - Meta: adaptador para template de autenticação com botão de copiar código, sem rota pública de envio. Sem retry automático de POST que possa duplicar mensagem. Aceitação não significa entrega.
-- Contratos de cadastro, dívidas, acordos, sessões, desafios, rate limiting e eventos; sem ORM ou banco.
+- Adaptadores SIC para cadastro, dívidas e acordos com schemas validados e minimização. Serviço de seleção de telefone, escopo por contato e consultas financeiras protegidas por sessão. Repositórios e emissor de desafios ainda dependem de persistência: ver `docs/integrations.md`.
 - Tokens de sessão aleatórios e hash; códigos aleatórios e digest HMAC vinculado ao desafio, com segredo externo ao banco.
 - APIs bloqueadas antes de ler dados pessoais ou chamar provedores; verificação de origem configurada e Cache-Control no-store.
 - Headers básicos, IDs de requisição em erros e workflow de CI.
@@ -43,9 +43,11 @@ CSP atual é base limitada (frame-ancestors, object-src, base-uri e form-action)
 
 ## Analytics e campanhas
 
-Taxonomia fechada: portal_viewed, access_started, authentication_completed, debts_viewed, agreement_confirmed. Schema estrito, IDs para deduplicação e interface de persistência. Eventos de autenticação/acordo devem ser emitidos pelo servidor após confirmação; nunca aceitar resultado alegado pelo browser como conversão oficial.
+Coleta, preferência, repositório PostgreSQL, migrations, retenção e views foram implementados. A configuração remota está bloqueada pela validação TLS do certificado Railway; detalhes e taxonomia atual em [analytics](analytics.md).
 
-Não há coleta, pixels ou cookies analíticos ativos. A função de atribuição aceita apenas códigos de campanha previamente permitidos, sem URLs completas ou parâmetros arbitrários. Implementar preferências/consentimento, catálogo de campanhas, retenção, política first/last touch e associação da jornada no servidor antes de habilitar. Rejeitar analytics não pode bloquear acesso.
+Taxonomias de browser e servidor são separadas em `tracking.ts`. Schemas estritos, IDs para deduplicação, cookies assinados e persistência transacional com preferência validada no banco. Resultados do cadastro/portfólio são instrumentados no serviço de acesso; autenticação/acordo definitivo só pode ser emitido na transação oficial futura, nunca pelo browser.
+
+Ativação depende do banco/configuração e de permissão do visitante. Campanhas aceitam apenas códigos do catálogo, sem URLs completas ou parâmetros arbitrários. A primeira campanha da jornada é preservada. Não há pixels; recusar analytics não impede acesso. Views fornecem funil, mapa agregado, campanhas e timeline para BI restrito, sem endpoint público de leitura.
 
 Separar métricas internas de publicidade. Não transmitir CPF, telefone, códigos, dados de dívida ou identificadores derivados desses campos a pixels. Não disparar tags indiscriminadamente nas telas financeiras.
 

@@ -4,7 +4,7 @@ import { LealAuthClient } from '../src/server/integrations/leal';
 import { MetaOtpSender } from '../src/server/integrations/meta';
 import type { Fetcher } from '../src/server/integrations/http';
 const config = { authUrl: 'https://sic.example/auth/login', username: 'test', password: 'test' };
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 test('concurrent calls share login and expiry triggers renewal', async () => {
   let count = 0; let now = 0;

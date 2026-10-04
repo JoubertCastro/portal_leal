@@ -1,3 +1,4 @@
+import 'server-only';
 import { z } from 'zod';
 import { IntegrationError, requestJson, type Fetcher } from './http';
 
@@ -5,7 +6,7 @@ const tokenSchema = z.object({ access_token: z.string().min(1), token_type: z.st
 export interface LealConfig { authUrl: string; username: string; password: string }
 
 // Instantiate once per process. Tokens are service credentials, never customer sessions.
-// No customer lookup is invented here: the cadastro contract is still unpublished.
+// Customer endpoints are composed by SicGateway. No browser-controlled URLs.
 export class LealAuthClient {
   private cached?: { value: string; expiresAt: number };
   private pending?: Promise<string>;
@@ -37,8 +38,9 @@ export class LealAuthClient {
   }
   // Internal adapter use only. Never forward browser-supplied paths to this method.
   async get(path: string): Promise<unknown> {
+    if (!/^\/[A-Za-z0-9/_-]+$/.test(path) || path.includes('//')) throw new IntegrationError('configuration');
     const url = new URL(path, this.origin);
-    if (!path.startsWith('/') || url.origin !== this.origin || url.username || url.password || url.hash) throw new IntegrationError('configuration');
+    if (url.origin !== this.origin || url.username || url.password || url.hash || url.search) throw new IntegrationError('configuration');
     for (let attempt = 0; attempt < 2; attempt++) {
       const token = await this.getToken();
       const result = await requestJson(this.fetcher, url.href, { headers: { Authorization: `Bearer ${token}` } });
