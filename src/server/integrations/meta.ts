@@ -18,7 +18,7 @@ export class MetaOtpSender implements OtpSender {
         ],
       } }),
     });
-    // Acceptance is not delivery; a future signed webhook must record delivery separately.
+    // Acceptance is not delivery; the signed webhook records delivery separately.
     if (result.status !== 200) throw new IntegrationError('unavailable');
     const parsed=z.object({ messages: z.array(z.object({ id: z.string().min(1).max(512) })).length(1) }).safeParse(result.body);
     if (!parsed.success) throw new IntegrationError('invalid_response');
