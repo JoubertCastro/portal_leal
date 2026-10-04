@@ -10,7 +10,7 @@ Webhook: `https://portalleal-production.up.railway.app/api/webhooks/whatsapp`. A
 
 O receptor armazena apenas hash do ID da mensagem, status e horários. Ignora contas/números diferentes e conteúdo de mensagens recebidas. Não é um chatbot. Eventos duplicados são idempotentes; eventos fora de ordem são preservados sem inferir regressão de estado. Só confirma recebimento de statuses após commit no banco; indisponibilidade retorna 503 para permitir nova entrega da Meta. Limite de corpo 256 KiB e 1.000 statuses por lote. Retenção: 30 dias.
 
-Aplicar `002_whatsapp.sql` com usuário administrativo pelo processo existente, depois conceder permissões ao usuário restrito (`db:migrate -- --provision`). A conexão TLS verificada e a migration ainda precisam ser realizadas na Railway. Enquanto faltar configuração/persistência, não anunciar entrega ou autenticação operacional.
+Em 04/10/2026 foram aplicadas as migrations 001, 002 e 003 no PostgreSQL da Railway e criado o papel restrito `leal_portal_runtime`. A CA pública foi obtida no volume pelo painel autenticado (fingerprint SHA-256 `00:E5:94:5B:EB:C9:8D:D6:E1:B6:CE:07:1E:98:05:7B:70:E6:49:D8:07:5E:5B:9C:99:79:5B:5F:90:D5:79:97`). O certificado servidor é assinado por essa CA e tem SAN `localhost`; configurar `DATABASE_TLS_SERVERNAME=localhost` junto de `DATABASE_CA_PEM` ou `DATABASE_CA_FILE`. A validação da cadeia e do nome continua obrigatória. As credenciais restritas foram guardadas apenas no ambiente local ignorado pelo Git, aguardando configuração no serviço do portal. Enquanto faltar configuração, não anunciar autenticação operacional.
 
 ## Login de clientes implementado, aguardando ativação
 

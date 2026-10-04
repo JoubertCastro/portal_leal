@@ -14,11 +14,11 @@ Destino confirmado pelo responsável: projeto `81bb2986-7c95-4ee1-9918-0f22fe72a
 - Banco, quando habilitado: `DATABASE_URL` com usuário restrito, CA confiável (`DATABASE_CA_FILE`) e nome certificado (`DATABASE_TLS_SERVERNAME`, se necessário). No mesmo projeto/ambiente, preferir endereço privado.
 - Segredos de analytics e localização: conforme `docs/analytics.md`, sem reutilizar credenciais administrativas como credenciais de runtime.
 
-Não copiar `.env.local`, `.env.database-admin.local` ou certificados do computador para o Git. Não configurar migrations administrativas como parte de `buildCommand` ou `startCommand`. O certificado Railway ainda não foi obtido por canal autenticado; não desativar verificação TLS para contornar essa pendência.
+Não copiar `.env.local`, `.env.database-admin.local` ou certificados do computador para o Git. Não configurar migrations administrativas como parte de `buildCommand` ou `startCommand`. A CA foi obtida pelo painel autenticado e as migrations 001–003 foram aplicadas em 04/10/2026. Configuração de runtime e Meta permanecem pendentes; ver [whatsapp.md](whatsapp.md).
 
 ## Escopo funcional desta publicação
 
-Entrada, demonstração fictícia e política de estatísticas podem ser homologadas. O adaptador usa `/SRVW-MIS-01/cadastro_portal/{documento}`. Autenticação real continua bloqueada até implementar persistência de desafios/sessões, verificar OTP e confirmar operação Meta. Alterar a rota não ativa sozinho o fluxo financeiro. Analytics está implementado, mas sua ativação depende de banco, certificado e migração.
+Entrada, demonstração fictícia e política de estatísticas podem ser homologadas. O adaptador usa `/SRVW-MIS-01/cadastro_portal/{documento}`. Persistência de desafios/sessões e verificação de OTP estão implementadas, mas autenticação real continua desativada até configurar o serviço e confirmar operação Meta. Analytics também aguarda configuração e validação da coleta no serviço.
 
 Healthcheck confirma o processo HTTP; não comprova banco, autenticação, Meta ou disponibilidade SIC. Verificar separadamente os fluxos habilitados e não declarar a homologação financeira completa com base no healthcheck.
 
