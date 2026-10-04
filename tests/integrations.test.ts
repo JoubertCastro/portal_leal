@@ -44,6 +44,6 @@ test('Meta sends approved template shape and never retries ambiguous delivery', 
     assert.equal(init?.redirect, 'error'); assert.equal(init?.cache, 'no-store');
     return json({ messages: [{ id: 'fake-message' }] });
   });
-  await sender.send('+5561999999999', '123456'); assert.equal(calls, 1);
+  assert.deepEqual(await sender.send('+5561999999999', '123456'),{messageId:'fake-message'}); assert.equal(calls, 1);
   await assert.rejects(sender.send('invalid', '123456'), /configuration/); assert.equal(calls, 1);
 });

@@ -1,0 +1,46 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createHash,randomBytes} from 'node:crypto';
+import {PGlite} from '@electric-sql/pglite';
+import type {Pool} from 'pg';
+import {CustomerAuthStore} from '../src/server/customer-auth-store';
+const hash=(s:string)=>createHash('sha256').update(s).digest('hex');
+test('shared OTP storage encrypts scope, limits attempts, consumes once and binds the browser',async()=>{
+  const pg=new PGlite();try{
+    await pg.exec(await readFile('migrations/003_customer_auth.sql','utf8'));
+    const query=async(text:string,values?:unknown[])=>{const r=await pg.query(text,values);return {...r,rowCount:r.rows.length||r.affectedRows||0};};
+    const db={query,connect:async()=>({query,release:()=>{}})} as unknown as Pool;
+    let code='';let sends=0;const store=new CustomerAuthStore(db,{send:async(_phone,c)=>{code=c;sends++;return {messageId:'synthetic-message'};}},'a'.repeat(64),'b'.repeat(64));
+    const browser=randomBytes(32).toString('base64url');const scope={document:'52998224725',identityKey:'CLIENTE TESTE',internalIds:[1]};
+    const id=randomBytes(32).toString('base64url');
+    await store.saveSelection({idHash:hash(id),browserTokenHash:hash(browser),expiresAt:Date.now()+300000,options:[{id:'option',phone:'+5561999999999',scope}]});
+    assert.equal(await store.claimSelection({idHash:hash(id),browserTokenHash:hash('wrong'),optionId:'option',now:Date.now()}),null);
+    const selected=await store.claimSelection({idHash:hash(id),browserTokenHash:hash(browser),optionId:'option',now:Date.now()});assert.ok(selected);
+    assert.equal(await store.claimSelection({idHash:hash(id),browserTokenHash:hash(browser),optionId:'option',now:Date.now()}),null);
+    const input={phone:selected.phone,scope,browserTokenHash:hash(browser),consent:{noticeVersion:'test',authentication:true as const,communications:false,requestedAt:Date.now()}};
+    const challenge=await store.issue(input);assert.match(code,/^\d{6}$/);assert.equal(sends,1);
+    const raw=JSON.stringify((await pg.query('SELECT payload,code_digest FROM leal_auth.challenges')).rows);
+    assert.ok(!raw.includes(scope.document));assert.ok(!raw.includes(scope.identityKey));assert.ok(!raw.includes(input.phone));
+    await assert.rejects(store.issue(input),/rate_limited/);assert.equal(sends,1);
+    assert.equal(await store.verify(challenge.challengeId,randomBytes(32).toString('base64url'),code),null);
+    const wrong=code==='000000'?'000001':'000000';assert.equal(await store.verify(challenge.challengeId,browser,wrong),null);
+    const token=await store.verify(challenge.challengeId,browser,code);assert.ok(token);
+    assert.equal(await store.verify(challenge.challengeId,browser,code),null);
+    const session=await store.findSession(hash(token));assert.deepEqual(session?.scope,scope);
+    assert.equal((await pg.query<{n:number}>('SELECT count(*)::int AS n FROM leal_auth.consents')).rows[0].n,1);
+    await store.revoke(token);assert.equal(await store.findSession(hash(token)),null);
+    const locked=await store.issue({...input,phone:'+5561988888888'});const lockedCode=code;const lockedWrong=code==='000000'?'000001':'000000';
+    for(let attempt=0;attempt<5;attempt++)assert.equal(await store.verify(locked.challengeId,browser,lockedWrong),null);
+    assert.equal(await store.verify(locked.challengeId,browser,lockedCode),null);
+    const expired=await store.issue({...input,phone:'+5561977777777'});
+    await pg.query("UPDATE leal_auth.challenges SET expires_at=now()-interval '1 second' WHERE id_hash=$1",[hash(expired.challengeId)]);
+    assert.equal(await store.verify(expired.challengeId,browser,code),null);
+    let ambiguousSends=0;
+    const failedStore=new CustomerAuthStore(db,{send:async()=>{ambiguousSends++;throw new Error('timeout');}},'a'.repeat(64),'b'.repeat(64));
+    await assert.rejects(failedStore.issue({...input,phone:'+5561966666666'}),/unavailable/);assert.equal(ambiguousSends,1);
+    assert.equal((await pg.query<{state:string}>("SELECT state FROM leal_auth.challenges WHERE state='unknown'")).rows.length,1);
+    await assert.rejects(failedStore.issue({...input,phone:'+5561966666666'}),/rate_limited/);assert.equal(ambiguousSends,1);
+    assert.equal((await store.take('synthetic',1,60000)).allowed,true);assert.equal((await store.take('synthetic',1,60000)).allowed,false);
+  }finally{await pg.close();}
+});

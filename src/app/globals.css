@@ -75,3 +75,9 @@ h1 { font-size: clamp(30px, 3vw, 40px); letter-spacing: -1.5px; line-height: 1.1
   .access-layout { width: calc(100% - 32px); grid-template-columns: 1fr; margin: 8px auto 26px; border-radius: 16px; } .access-card { padding: 30px 24px; } .eyebrow { font-size: 10px; margin-bottom: 14px; } h1 { font-size: 32px; } .lead { font-size: 16px; margin-bottom: 20px; } .welcome-panel { padding: 24px; } .welcome-content { padding: 24px 0; } .welcome-content h2 { font-size: 28px; } .panel-symbol { display: none; } .feature-list { margin-top: 20px; } .site-footer { flex-direction: column; align-items: center; font-size: 11px; } .status-note { font-size: 11px; } .access-support { margin-top: 24px; }
 }
 @media (prefers-reduced-motion: reduce) { *, *:before, *:after { scroll-behavior: auto !important; } }
+.auth-consent { display:flex; align-items:flex-start; gap:.75rem; font-size:.875rem; line-height:1.5; }
+.access-form .auth-consent input { width:1.2rem; height:1.2rem; min-height:1.2rem; flex-shrink:0; margin-top:.2rem; }
+.access-form select { max-width:100%; padding:.8rem; border:1px solid #cbd5e1; border-radius:.75rem; }
+.customer-portal { max-width:1000px; margin:2rem auto; padding:1.5rem; }
+.customer-portal header { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+.customer-portal article { padding:1.5rem; margin:1rem 0; border:1px solid #cbd5e1; border-radius:1rem; background:white; overflow-wrap:anywhere; }

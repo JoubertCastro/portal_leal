@@ -37,6 +37,10 @@ try {
     await client.query('GRANT SELECT,INSERT ON leal_analytics.events,leal_analytics.consent_history TO leal_portal_runtime');
     await client.query('GRANT SELECT ON leal_analytics.campaigns TO leal_portal_runtime');
     await client.query('GRANT USAGE ON ALL SEQUENCES IN SCHEMA leal_analytics TO leal_portal_runtime');
+    await client.query('GRANT USAGE ON SCHEMA leal_whatsapp TO leal_portal_runtime');
+    await client.query('GRANT SELECT,INSERT,DELETE ON leal_whatsapp.delivery_events TO leal_portal_runtime');
+    await client.query('GRANT USAGE ON SCHEMA leal_auth TO leal_portal_runtime');
+    await client.query('GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA leal_auth TO leal_portal_runtime');
     if (!(await client.query("SELECT 1 FROM pg_roles WHERE rolname='leal_analytics_reader'")).rowCount) await client.query('CREATE ROLE leal_analytics_reader NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE');
     await client.query('GRANT USAGE ON SCHEMA leal_analytics TO leal_analytics_reader');
     await client.query('GRANT SELECT ON leal_analytics.daily_funnel,leal_analytics.journey_funnel,leal_analytics.access_map,leal_analytics.timeline,leal_analytics.campaign_funnel TO leal_analytics_reader');

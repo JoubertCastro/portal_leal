@@ -2,7 +2,7 @@
 export interface Customer { id: string; externalId: string; displayName: string }
 export interface Debt { id: string; creditor: string; amountCents: number; status: 'open' | 'negotiating' }
 export interface Agreement { id: string; creditor: string; installmentCents: number; installments: number; paidInstallments: number; nextDueDate: string }
-export interface OtpSender { send(to: string, code: string): Promise<void> }
+export interface OtpSender { send(to: string, code: string): Promise<{ messageId: string }> }
 export interface Session {
   tokenHash: string; customerId: string; createdAt: number; expiresAt: number; revokedAt: number | null;
 }

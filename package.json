@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "db:migrate": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.database-admin.local --import tsx scripts/migrate.ts",
     "analytics:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/analytics-maintenance.ts",
-    "sic:check": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/check-sic.ts"
+    "sic:check": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/check-sic.ts",
+    "auth:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/auth-maintenance.ts"
   },
   "dependencies": {
     "next": "16.3.6",

@@ -1,5 +1,7 @@
 # Integrações — cadastro, dívidas e acordos
 
+Atualização de 04/10/2026: o fluxo completo de código/sessão, a persistência e os webhooks estão implementados no código, mas a ativação aguarda configuração Meta, TLS e migrações. O detalhamento atual está em [whatsapp.md](whatsapp.md). Os trechos abaixo que descrevem dependências futuras registram o checkpoint anterior à implementação. A homologação restrita já consultou os endpoints reais com autorização; nenhum WhatsApp foi enviado.
+
 ## SIC
 
 POST /auth/login recebe JSON usuario/senha. Resposta observada na investigação anterior: access_token, token_type, expires_in, expires_at e usuario. Validade observada de 43.200 segundos. Nenhuma credencial é versionada.

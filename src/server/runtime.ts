@@ -2,6 +2,9 @@ import 'server-only';
 import { LealAuthClient } from './integrations/leal';
 import { MetaOtpSender } from './integrations/meta';
 import { SicGateway } from './integrations/sic';
+import { CustomerAuthStore } from './customer-auth-store';
+import { CustomerAccessService } from './customer-access';
+import { getDatabase } from './database';
 // Lazy composition: build and preview never require credentials or call providers.
 let leal: LealAuthClient | undefined;
 export function getLealAuth(): LealAuthClient {
@@ -13,4 +16,11 @@ export function getOtpSender(): MetaOtpSender {
 export function getSicGateway(): SicGateway {
   return new SicGateway(getLealAuth(), process.env.LEAL_SERVER ?? 'SRVW-MIS-01');
 }
-export const authReadiness = { available: false, reason: 'shared_persistence_and_whatsapp_activation_pending' } as const;
+export const authReadiness = { get available() {
+  return process.env.AUTH_ENABLED==='true' && ['DATABASE_URL','AUTH_ENCRYPTION_KEY','AUTH_DIGEST_KEY','META_GRAPH_VERSION','META_PHONE_NUMBER_ID','META_ACCESS_TOKEN','META_AUTH_TEMPLATE','LEAL_AUTH_URL','LEAL_AUTH_USUARIO','LEAL_AUTH_SENHA'].every(key=>!!process.env[key]);
+}, reason: 'configuration_and_shared_persistence_required' };
+export function getCustomerAuth(){
+  if(!authReadiness.available)throw new Error('AUTH_UNAVAILABLE');
+  const store=new CustomerAuthStore(getDatabase(),getOtpSender(),process.env.AUTH_ENCRYPTION_KEY??'',process.env.AUTH_DIGEST_KEY??'');
+  return {store,service:new CustomerAccessService(getSicGateway(),store,store,store,process.env.AUTH_DIGEST_KEY??'')};
+}
