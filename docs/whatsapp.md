@@ -6,7 +6,7 @@ O adaptador envia templates de autenticação com botão de copiar código e dev
 
 No serviço `portal_leal`, configurar `META_GRAPH_VERSION`, `META_PHONE_NUMBER_ID`, `META_ACCESS_TOKEN`, `META_AUTH_TEMPLATE` e `META_AUTH_LANGUAGE`, correspondentes à conta e ao template aprovados. O nome do template, idioma e botão devem corresponder exatamente à configuração Meta. Não colocar segredos em variáveis `NEXT_PUBLIC_*`.
 
-Webhook: `https://portalleal-production.up.railway.app/api/webhooks/whatsapp`. A verificação GET usa `META_WEBHOOK_VERIFY_TOKEN` (segredo aleatório com pelo menos 32 caracteres). POST exige `META_APP_SECRET`, assinatura HMAC SHA-256 do corpo original, `META_WABA_ID` e `META_PHONE_NUMBER_ID`. Assinar o campo `messages` no aplicativo Meta. Não substituir o webhook de outro serviço sem verificar suas responsabilidades.
+Webhook opcional, apenas para acompanhar status de entrega: `https://portalleal-production.up.railway.app/api/webhooks/whatsapp`. A verificação GET usa `META_WEBHOOK_VERIFY_TOKEN` (segredo aleatório com pelo menos 32 caracteres). POST exige `META_APP_SECRET`, assinatura HMAC SHA-256 do corpo original, `META_WABA_ID` e `META_PHONE_NUMBER_ID`. Assinar o campo `messages` no aplicativo Meta. Não substituir o webhook de outro serviço sem verificar suas responsabilidades.
 
 O receptor armazena apenas hash do ID da mensagem, status e horários. Ignora contas/números diferentes e conteúdo de mensagens recebidas. Não é um chatbot. Eventos duplicados são idempotentes; eventos fora de ordem são preservados sem inferir regressão de estado. Só confirma recebimento de statuses após commit no banco; indisponibilidade retorna 503 para permitir nova entrega da Meta. Limite de corpo 256 KiB e 1.000 statuses por lote. Retenção: 30 dias.
 
@@ -30,7 +30,7 @@ Referências oficiais: [verificação de webhook](https://whatsapp.github.io/Wha
 
 Destino: serviço `portal_leal`, ambiente `production` utilizado como homologação. O arquivo local `.env.railway-whatsapp.local` (ignorado pelo Git) contém a conexão privada `postgres.railway.internal:5432`, com o usuário restrito `leal_portal_runtime`, a CA e as chaves individuais do portal. A conexão pública fica apenas no ambiente local para administração. Não usar o usuário administrador `postgres` na aplicação.
 
-No painel Variables, os campos Meta são preparados vazios. Preencher:
+Para enviar o OTP e validar o login, preencher os cinco primeiros campos abaixo. As três variáveis de webhook são opcionais e podem ficar vazias no fluxo somente de envio:
 
 | Variável | Valor |
 | --- | --- |
@@ -39,13 +39,13 @@ No painel Variables, os campos Meta são preparados vazios. Preencher:
 | `META_ACCESS_TOKEN` | Token de acesso com permissão de envio para esse número |
 | `META_AUTH_TEMPLATE` | Nome exato do template aprovado de autenticação com botão copiar código |
 | `META_AUTH_LANGUAGE` | Idioma aprovado do template; preparado como `pt_BR` |
-| `META_WABA_ID` | ID da conta WhatsApp Business proprietária do número |
-| `META_APP_SECRET` | Segredo do aplicativo Meta usado na assinatura dos webhooks |
-| `META_WEBHOOK_VERIFY_TOKEN` | Valor gerado no arquivo local; copiar também para a configuração do webhook na Meta |
+| `META_WABA_ID` | Opcional: ID da conta usado para filtrar eventos do webhook |
+| `META_APP_SECRET` | Opcional: segredo do aplicativo para validar a assinatura dos webhooks |
+| `META_WEBHOOK_VERIFY_TOKEN` | Opcional: valor usado somente na verificação do webhook pela Meta |
 
-Copiar também `AUTH_ENCRYPTION_KEY` e `AUTH_DIGEST_KEY` do arquivo local para seus campos na Railway, preservando os valores gerados. Não compartilhar esse arquivo nem colocá-lo no repositório. Manter as credenciais SIC e `APP_ORIGIN` existentes. A CA é multilinha: colar o conteúdo completo entre BEGIN e END, incluindo essas linhas, sem as aspas externas do arquivo dotenv.
+As chaves do portal continuam obrigatórias mesmo sem webhook. Copiar `AUTH_ENCRYPTION_KEY` e `AUTH_DIGEST_KEY` do arquivo local para seus campos na Railway, preservando os valores gerados. Não compartilhar esse arquivo nem colocá-lo no repositório. Manter as credenciais SIC e `APP_ORIGIN` existentes. A CA é multilinha: colar o conteúdo completo entre BEGIN e END, incluindo essas linhas, sem as aspas externas do arquivo dotenv.
 
-Depois de preencher, configurar `HOMOLOGATION_ENABLED=false` e `AUTH_ENABLED=true`, aplicar as alterações e aguardar o deploy. Configurar o callback acima na Meta, informar o mesmo verify token e assinar `messages`. O login continuará indisponível enquanto faltarem as variáveis essenciais. `/api/health` indica configuração, mas não comprova entrega de mensagem nem conectividade com todos os provedores.
+Depois de preencher, configurar `HOMOLOGATION_ENABLED=false` e `AUTH_ENABLED=true`, aplicar as alterações e aguardar o deploy. Somente se desejar acompanhar entrega, configurar o callback acima na Meta, informar o mesmo verify token e assinar `messages`. O envio e a confirmação do código no portal não dependem do webhook. Sem ele, o servidor conhece a aceitação do envio pela API, mas não recebe confirmação de entrega ou falhas posteriores. O login continuará indisponível enquanto faltarem as variáveis essenciais. `/api/health` indica configuração, mas não comprova entrega de mensagem nem conectividade com todos os provedores.
 
 Teste de aceite pelo responsável, usando a página inicial pública (não `/homologacao`):
 
@@ -53,6 +53,6 @@ Teste de aceite pelo responsável, usando a página inicial pública (não `/hom
 2. Autorizar a mensagem de autenticação; a preferência por comunicados é opcional e independente.
 3. Solicitar o código e confirmar o recebimento efetivo no WhatsApp. O código tem seis dígitos e expira em cinco minutos; `1234` não autentica nesse fluxo.
 4. Confirmar o código, acessar as dívidas e os acordos retornados pelo SIC e verificar que nenhum dado financeiro aparece antes da autenticação.
-5. Sair e confirmar que o portal volta a exigir login. Verificar a chegada dos status assinados em `leal_whatsapp.delivery_events` (receber HTTP 200 no envio sozinho não comprova entrega).
+5. Sair e confirmar que o portal volta a exigir login. Se o webhook estiver configurado, verificar os status assinados em `leal_whatsapp.delivery_events`. Sem webhook, confirmar o recebimento diretamente no WhatsApp e a autenticação no portal; receber HTTP 200 no envio sozinho não comprova entrega.
 
 Configuração vazia, token expirado, template incompatível ou falha de banco devem impedir o acesso, sem recorrer a código fixo. Os testes automatizados simulam a Meta; só a execução acima comprova o caminho real. Agendar a manutenção diária descrita acima antes do uso contínuo.
