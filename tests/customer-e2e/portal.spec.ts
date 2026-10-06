@@ -11,7 +11,7 @@ test('real portal layout uses protected portfolio, tabs, details, installments a
         await route.fulfill({ json: portfolio }); });
     await page.goto('/portal');
     await expect(page.getByRole('heading', { name: 'Olá, Maria de Souza.' })).toBeVisible();
-    await expect(page.getByText('Saldo total consultado')).toBeVisible(); await expect(page.locator('.creditor-logo')).toBeVisible();
+    await expect(page.getByText('Saldo total consultado')).toBeVisible(); await expect(page.locator('.creditor-logo')).toBeVisible(); await expect.poll(()=>page.locator('.creditor-logo').evaluate((img:HTMLImageElement)=>img.naturalWidth)).toBeGreaterThan(0);
     await expect(page.getByText('Parcela 2 de 3 · 10/02/2026')).toBeVisible();
     await page.screenshot({ path: `test-results/customer-${info.project.name}.png`, fullPage: true });
     await page.getByRole('button', { name: 'Minhas pendências' }).click();
