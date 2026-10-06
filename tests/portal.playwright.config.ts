@@ -1,0 +1,3 @@
+import { defineConfig } from '@playwright/test';
+import base from '../playwright.config';
+export default defineConfig({ ...base, testDir: './customer-e2e', webServer: { command: 'npm start', url: 'http://127.0.0.1:4174', reuseExistingServer: false, timeout: 120000, env: { APP_ORIGIN: 'http://127.0.0.1:4174', HOSTNAME: '127.0.0.1', PORT: '4174', ANALYTICS_ENABLED: 'false', AUTH_ENABLED: 'true', DATABASE_URL: 'postgresql://test:test@127.0.0.1:1/test', AUTH_ENCRYPTION_KEY: 'a'.repeat(64), AUTH_DIGEST_KEY: 'b'.repeat(64), META_GRAPH_VERSION: 'v23.0', META_PHONE_NUMBER_ID: '123', META_ACCESS_TOKEN: 'test-only', META_AUTH_TEMPLATE: 'test_only', LEAL_AUTH_URL: 'https://example.com/auth/login', LEAL_AUTH_USUARIO: 'test', LEAL_AUTH_SENHA: 'test' } } });

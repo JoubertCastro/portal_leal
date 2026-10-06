@@ -11,12 +11,13 @@
     "start": "node scripts/start.mjs",
     "check": "next typegen && tsc --noEmit",
     "lint": "eslint src tests scripts next.config.ts playwright.config.ts eslint.config.mjs",
-    "test": "tsx --conditions=react-server --test tests/*.test.ts",
+    "test": "tsx --conditions=react-server --test tests/*.test.ts && tsx --test tests/*.test.tsx",
     "test:e2e": "playwright test",
     "db:migrate": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.database-admin.local --import tsx scripts/migrate.ts",
     "analytics:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/analytics-maintenance.ts",
     "sic:check": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/check-sic.ts",
-    "auth:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/auth-maintenance.ts"
+    "auth:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/auth-maintenance.ts",
+    "test:portal": "playwright test --config tests/portal.playwright.config.ts"
   },
   "dependencies": {
     "next": "16.3.6",
