@@ -92,10 +92,10 @@ export class CustomerAccessService {
     if (!session || session.tokenHash !== tokenHash || session.browserTokenHash !== hash(browserToken) || session.revokedAt !== null || !Number.isFinite(session.expiresAt) || session.expiresAt <= now || !Number.isFinite(session.verifiedAt) || session.verifiedAt > now || session.verifiedAt >= session.expiresAt) throw new AccessError('unauthenticated');
     await this.limit('portfolio', tokenHash, 30, 60_000);
     const started=this.now();
-    let debts;let agreements;
-    try{[debts,agreements]=await Promise.all([this.sic.debts(session.scope),this.sic.agreements(session.scope)]);}
+    let debts;let agreements;let customerName;
+    try{[debts,agreements,customerName]=await Promise.all([this.sic.debts(session.scope),this.sic.agreements(session.scope),this.sic.customerName(session.scope)]);}
     catch(error){await this.analytics.record({name:'portfolio_failed',durationMs:Math.max(0,this.now()-started)});throw error;}
     await this.analytics.record({name:'portfolio_loaded',debtCount:debts.length,agreementCount:agreements.length,durationMs:Math.max(0,this.now()-started)},{document:session.scope.document,verified:true});
-    return { debts, agreements };
+    return { debts, agreements, customerName };
   }
 }

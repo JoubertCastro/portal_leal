@@ -96,7 +96,7 @@ test('missing, expired, revoked, unverified and wrong-browser sessions never que
 });
 test('valid session determines upstream document, and portfolio limits fail before network', async () => {
   const f = fixture(); f.setSession(validSession());
-  assert.deepEqual(await f.service.portfolio(sessionToken, browser), { debts: [], agreements: [] });
-  assert.deepEqual(f.paths.sort(), [`/SRVW-MIS-01/acordos/${document}`, `/SRVW-MIS-01/divida/${document}`]);
-  f.deny(); await assert.rejects(f.service.portfolio(sessionToken, browser), /rate_limited/); assert.equal(f.paths.length, 2);
+  assert.deepEqual(await f.service.portfolio(sessionToken, browser), { debts: [], agreements: [], customerName: registration.Nome });
+  assert.deepEqual(f.paths.sort(), [`/SRVW-MIS-01/acordos/${document}`, `/SRVW-MIS-01/cadastro_portal/${document}`, `/SRVW-MIS-01/divida/${document}`]);
+  f.deny(); await assert.rejects(f.service.portfolio(sessionToken, browser), /rate_limited/); assert.equal(f.paths.length, 3);
 });

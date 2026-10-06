@@ -9,8 +9,11 @@ export interface RecordScope { document: string; identityKey: string; internalId
 export type RegistrationCheck =
   | { kind: 'not_found' | 'no_contacts' | 'review_required' }
   | { kind: 'ready'; document: string; identityKey: string; acceptedNames: { internalId: number; name: string }[]; contacts: { phone: string; internalIds: number[] }[] };
-export interface CustomerDebt { id: string; creditor: string; product: string; contractEnding: string; sourceStatus: string; dueDate: string; balanceCents: number }
+export interface CustomerDebt { id: string; creditor: string; product: string; contractNumber?: string; contractEnding: string; sourceStatus: string; dueDate: string; balanceCents: number }
 export interface CustomerAgreement { id: string; creditor: string; product: string; contractEnding: string; agreedAt: string; totalInstallments: number; installments: { number: number; dueDate: string; amountCents: number; paidAt: string | null }[] }
+
+// Internal portfolio labels are not customer-facing product names.
+export function customerProduct(value: string): string { return /^CREDOR\s*\d+$/i.test(value.trim()) ? '' : value; }
 
 function assertDocument(value: string): string {
   if (!validDocument(value)) throw new IntegrationError('configuration');
@@ -53,6 +56,15 @@ export class SicGateway {
     const acceptedNames = result.data.map(row => ({ internalId: row.Codigo_Interno, name: identityKey(row.Nome) }));
     return { kind: 'ready', document, identityKey: [...names][0], acceptedNames, contacts: [...contacts].map(([phone, ids]) => ({ phone, internalIds: [...ids].sort((a, b) => a - b) })) };
   }
+  async customerName(scope: RecordScope): Promise<string | null> {
+    assertScope(scope);
+    const result = registrationsSchema.safeParse(await this.transport.get(`/${this.server}/cadastro_portal/${scope.document}`));
+    if (!result.success) throw new IntegrationError('invalid_response');
+    sameDocument(result.data, scope.document);
+    const rows = result.data.filter(row => scope.internalIds.includes(row.Codigo_Interno));
+    if (rows.some(row => !authorizedName(scope, row.Codigo_Interno, row.Nome))) throw new IntegrationError('invalid_response');
+    return rows[0]?.Nome ?? null;
+  }
   async debts(scope: RecordScope): Promise<CustomerDebt[]> {
     assertScope(scope); const document = assertDocument(scope.document);
     const result = debtsSchema.safeParse(await this.transport.get(`/${this.server}/divida/${document}`));
@@ -63,7 +75,7 @@ export class SicGateway {
     for (const row of result.data) {
       if (!scope.internalIds.includes(row.Codigo_Interno)) continue;
       if (!authorizedName(scope, row.Codigo_Interno, row.nome)) throw new IntegrationError('invalid_response');
-      const debt: CustomerDebt = { id: String(row.Codigo_Interno), creditor: row.Banco, product: row.Produto, contractEnding: row.cartao.slice(-4), sourceStatus: row.Descricao, dueDate: row.Vencimento, balanceCents: row.Saldo_Atual };
+      const debt: CustomerDebt = { id: String(row.Codigo_Interno), creditor: row.Banco, product: customerProduct(row.Produto), contractNumber: row.cartao, contractEnding: row.cartao.slice(-4), sourceStatus: row.Descricao, dueDate: row.Vencimento, balanceCents: row.Saldo_Atual };
       const previous = records.get(debt.id);
       if (rawContracts.has(debt.id) && rawContracts.get(debt.id) !== row.cartao) throw new IntegrationError('invalid_response');
       if (previous && JSON.stringify(previous) !== JSON.stringify(debt)) throw new IntegrationError('invalid_response');
@@ -88,7 +100,7 @@ export class SicGateway {
       if (!scope.internalIds.includes(row.Codigo_Interno)) continue;
       if (!authorizedName(scope, row.Codigo_Interno, row.nome)) throw new IntegrationError('invalid_response');
       const id = `${row.Codigo_Interno}:${row.codigo_do_acordo}`;
-      const agreement: CustomerAgreement = { id, creditor: row.Banco, product: row.Produto, contractEnding: row.cartao.slice(-4), agreedAt: row.data_do_acordo, totalInstallments: row.parcelas, installments: [] };
+      const agreement: CustomerAgreement = { id, creditor: row.Banco, product: customerProduct(row.Produto), contractEnding: row.cartao.slice(-4), agreedAt: row.data_do_acordo, totalInstallments: row.parcelas, installments: [] };
       const previous = records.get(id);
       if (rawContracts.has(id) && rawContracts.get(id) !== row.cartao) throw new IntegrationError('invalid_response');
       if (previous && JSON.stringify({ ...previous, installments: [] }) !== JSON.stringify(agreement)) throw new IntegrationError('invalid_response');

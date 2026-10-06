@@ -80,12 +80,12 @@ test('invalid document does not call the upstream; mixed-document responses fail
     await assert.rejects(operation === 'registration' ? sic.registration(document) : sic[operation](scope), /invalid_response/);
   }
 });
-test('debts keep exact cents and zero, filter unauthorized IDs and never expose full contract or identity', async () => {
+test('debts keep exact cents and zero, filter unauthorized IDs and expose the authorized full contract without document or name', async () => {
   const result = await gateway([{ ...debt, Saldo_Atual: 0 }, { ...debt, Codigo_Interno: 102 }]).debts(scope);
   assert.equal(result.length, 1); assert.equal(result[0].balanceCents, 0); assert.equal(result[0].sourceStatus, 'PARALISADO');
-  assert.equal(result[0].contractEnding, '7890'); assert.equal(result[0].dueDate, '2026-09-01');
+  assert.equal(result[0].contractNumber, debt.cartao.trim()); assert.equal(result[0].contractEnding, '7890'); assert.equal(result[0].dueDate, '2026-09-01');
   const serialized = JSON.stringify(result);
-  for (const secret of [document, debt.nome, debt.cartao.trim()]) assert.equal(serialized.includes(secret), false);
+  for (const secret of [document, debt.nome]) assert.equal(serialized.includes(secret), false);
   assert.equal((await gateway([debt]).debts(scope))[0].balanceCents, 12345);
 });
 test('financial payload validation rejects negative/fractional values, bad dates, identity conflicts and duplicate conflicts', async () => {
@@ -123,4 +123,15 @@ test('agreements accept SIC zero-based numbering without renumbering or relaxing
   assert.deepEqual(result[0].installments.map(p => p.number), Array.from({length:15}, (_,i)=>i));
   for (const number of [-1, 0.5, 16]) await assert.rejects(gateway([{...agreement, parcelas:15, parcela:number}]).agreements(scope), /invalid_response/);
   await assert.rejects(gateway([{...agreement, parcela:0, valor_da_parcela:-1}]).agreements(scope), /invalid_response/);
+});
+
+test('display name preserves API name order and is restricted to the authenticated scope', async () => {
+  assert.equal(await gateway([{...registration,Nome:'CLIENTE EXEMPLO'}]).customerName(scope),'CLIENTE EXEMPLO');
+  assert.equal(await gateway([{...registration,Codigo_Interno:999}]).customerName(scope),null);
+  await assert.rejects(gateway([{...registration,Nome:'OUTRA PESSOA'}]).customerName(scope),/invalid_response/);
+});
+test('internal creditor product labels are omitted in both financial DTOs', async () => {
+  assert.equal((await gateway([{...debt,Produto:'CREDOR 1'}]).debts(scope))[0].product,'');
+  assert.equal((await gateway([{...agreement,Produto:'credor 12'}]).agreements(scope))[0].product,'');
+  assert.equal((await gateway([debt]).debts(scope))[0].product,debt.Produto);
 });

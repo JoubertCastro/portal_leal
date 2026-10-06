@@ -7,3 +7,9 @@ const data: Portfolio = { debts: [{ id: '1', creditor: 'Banco teste', product: '
 test('overview uses earliest unpaid returned installment and excludes paid amounts', () => { const html = renderToStaticMarkup(createElement(PortfolioContent, { data, tab: 'inicio' })); assert.match(html, /10\/02\/2026/); assert.doesNotMatch(html, /10\/01\/2026/); assert.match(html, /1 parcelas sem pagamento informado/); });
 test('agreements preserve payment dates and explicitly disclose incomplete schedules', () => { const html = renderToStaticMarkup(createElement(PortfolioContent, { data, tab: 'acordos' })); assert.match(html, /Pago em 09\/01\/2026/); assert.match(html, /retornou 2 de 3 parcelas/); assert.match(html, /Sem pagamento informado/); });
 test('zero balance does not claim settlement; empty portfolio has no fabricated next payment', () => { assert.match(renderToStaticMarkup(createElement(PortfolioContent, { data, tab: 'pendencias' })), /não confirma a quitação/); const html = renderToStaticMarkup(createElement(PortfolioContent, { data: { debts: [], agreements: [] }, tab: 'inicio' })); assert.match(html, /Nenhuma parcela/); assert.doesNotMatch(html, /payment-value/); });
+
+import {creditorLogo} from '../src/components/creditor-identity';
+test('creditor branding recognizes supported names and leaves unrelated creditors unbranded',()=>{
+ for(const [name,file] of [['BANCO PAN','banco-pan'],['BANCO BTG PACTUAL','btg-pactual'],['CARREFOUR','carrefour'],['TW.CAPITAL','tw-capital'],['SERASA','serasa']])assert.equal(creditorLogo(name),`/assets/${file}.png`);
+ assert.equal(creditorLogo('Outra empresa'),undefined);
+});

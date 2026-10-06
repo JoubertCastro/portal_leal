@@ -69,3 +69,6 @@
 .paid-badge { color: #285437; background: #edf4eb; }
 .customer-area .agreement + .agreement { border-top: 1px solid var(--line); padding-top: 28px; }
 @media(max-width:700px) { .customer-profile { gap: 12px; } .customer-facts { grid-template-columns: 1fr; } .customer-area .summary-grid { grid-template-columns: 1fr; } .customer-area .summary-card > strong { font-size: 30px; } .customer-area .installment-list .badge { flex-basis: 100%; } }
+.creditor-identity { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 14px; max-width: 100%; }
+.creditor-logo { width: 100px; height: 44px; object-fit: contain; background: white; border-radius: 5px; padding: 4px; }
+.creditor-identity > span, .contract-number, .customer-area .page-heading h1 { overflow-wrap: anywhere; }
