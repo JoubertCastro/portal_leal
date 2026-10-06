@@ -15,7 +15,7 @@ const localDate = z.string().max(32).regex(/^\d{4}-\d{2}-\d{2}(?:T(?:[01]\d|2[0-
 const base = { Codigo_Interno: identifier, CPF_CNPJ: document };
 export const registrationsSchema = z.array(z.object({ ...base, Descricao: text, Nome: text, telefone: z.string().max(40) })).max(500);
 export const debtsSchema = z.array(z.object({ ...base, cartao: z.string().max(250).transform(value => value.trim()).refine(value => /^[\d -]+$/.test(value)), Descricao: text, nome: text, Banco: text, Produto: text, Vencimento: localDate, Saldo_Atual: currency })).max(500);
-export const agreementsSchema = z.array(z.object({ ...base, cartao: z.string().max(250).transform(value => value.trim()).refine(value => /^[\d -]+$/.test(value)), nome: text, Banco: text, Produto: text, data_do_acordo: localDate, parcelas: z.number().int().min(1).max(999), codigo_do_acordo: identifier, parcela: z.number().int().min(1).max(999), vencimento: localDate, valor_da_parcela: currency, pagamento: localDate.nullable() }).refine(row => row.parcela <= row.parcelas)).max(2000);
+export const agreementsSchema = z.array(z.object({ ...base, cartao: z.string().max(250).transform(value => value.trim()).refine(value => /^[\d -]+$/.test(value)), nome: text, Banco: text, Produto: text, data_do_acordo: localDate, parcelas: z.number().int().min(1).max(999), codigo_do_acordo: identifier, parcela: z.number().int().min(0).max(999), vencimento: localDate, valor_da_parcela: currency, pagamento: localDate.nullable() }).refine(row => row.parcela <= row.parcelas)).max(2000);
 
 export function normalizeWhatsapp(raw: string): string | null {
   if (!/^[\d+()\s-]*$/.test(raw)) return null;

@@ -115,3 +115,12 @@ test('adapter rejects path injection before login and always disables redirects/
   assert.equal(calls, 0);
   await requestJson(async (_url, init) => { assert.equal(init?.redirect, 'error'); assert.equal(init?.cache, 'no-store'); assert.ok(init?.signal); return Response.json([]); }, 'https://example.test', {});
 });
+
+test('agreements accept SIC zero-based numbering without renumbering or relaxing financial validation', async () => {
+  const rows = Array.from({length: 15}, (_, number) => ({...agreement, parcelas: 15, parcela: number}));
+  const result = await gateway(rows).agreements(scope);
+  assert.equal(result[0].totalInstallments, 15);
+  assert.deepEqual(result[0].installments.map(p => p.number), Array.from({length:15}, (_,i)=>i));
+  for (const number of [-1, 0.5, 16]) await assert.rejects(gateway([{...agreement, parcelas:15, parcela:number}]).agreements(scope), /invalid_response/);
+  await assert.rejects(gateway([{...agreement, parcela:0, valor_da_parcela:-1}]).agreements(scope), /invalid_response/);
+});
