@@ -16,6 +16,8 @@
     "db:migrate": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.database-admin.local --import tsx scripts/migrate.ts",
     "analytics:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/analytics-maintenance.ts",
     "sic:check": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/check-sic.ts",
+    "arc4:check": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.arc4.local --conditions=react-server --import tsx scripts/check-arc4.ts",
+    "arc4:check-customer": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.arc4.local --conditions=react-server --import tsx scripts/check-arc4-customer.ts",
     "auth:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/auth-maintenance.ts",
     "test:portal": "playwright test --config tests/portal.playwright.config.ts"
   },

@@ -41,6 +41,15 @@ const agreement = { ...debt, data_do_acordo: '2026-09-01T00:00:00', parcelas: 2,
 const scope: RecordScope = { document, identityKey: identityKey(registration.Nome), internalIds: [101] };
 const gateway = (body: unknown) => new SicGateway({ get: async () => body });
 
+test('SIC accepts complete alphanumeric contracts without allowing URL or markup injection', async () => {
+  const cartao = 'CN-000123-A  ';
+  assert.equal((await gateway([{ ...debt, cartao, Banco: 'ARC4U' }]).debts(scope))[0].contractNumber, 'CN-000123-A');
+  assert.equal((await gateway([{ ...agreement, cartao, Banco: 'ARC4U' }]).agreements(scope)).length, 1);
+  for (const unsafe of ['../contract', '<script>', 'contract?x=1', 'contract\nheader']) {
+    await assert.rejects(gateway([{ ...debt, cartao: unsafe }]).debts(scope), /invalid_response/);
+  }
+});
+
 test('registration uses published cadastro_portal route and preserves document zeros', async () => {
   const paths: string[] = [];
   const sic = new SicGateway({get:async path=>{paths.push(path);return [];}});
