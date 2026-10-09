@@ -82,7 +82,7 @@ export class Arc4Client implements CreditorProvider {
     });
     if (result.status === 401 || result.status === 403) throw new IntegrationError('unauthorized');
     if (result.status === 429) throw new Arc4Error('rate_limited');
-    if (result.status !== 200) throw new IntegrationError('unavailable', { kind: 'http', status: result.status });
+    if (result.status !== 200) throw new IntegrationError('unavailable', { kind: 'http', status: result.status, reason: result.problem });
     const parsed = tokenSchema.safeParse(result.body);
     if (!parsed.success) throw new IntegrationError('invalid_response');
     this.cached = { value: parsed.data.access_token, expiresAt: started + (parsed.data.expires_in - 30) * 1000 };
@@ -101,7 +101,7 @@ export class Arc4Client implements CreditorProvider {
       if (result.status === 404) throw new Arc4Error('not_found');
       if (result.status === 409) throw new Arc4Error('pending');
       if (result.status === 429) throw new Arc4Error('rate_limited');
-      if (result.status !== 200) throw new IntegrationError('unavailable', { kind: 'http', status: result.status });
+      if (result.status !== 200) throw new IntegrationError('unavailable', { kind: 'http', status: result.status, reason: result.problem });
       return result.body;
     }
     throw new IntegrationError('unauthorized');
@@ -189,7 +189,7 @@ export class Arc4Client implements CreditorProvider {
     if (result.status === 401 || result.status === 403) throw new IntegrationError('unauthorized');
     if (result.status === 422) throw new Arc4Error('invalid_selection');
     if (result.status === 429) throw new Arc4Error('rate_limited');
-    if (result.status !== 200) throw new IntegrationError('unavailable', { kind: 'http', status: result.status });
+    if (result.status !== 200) throw new IntegrationError('unavailable', { kind: 'http', status: result.status, reason: result.problem });
     const parsed = simulationSchema.safeParse(result.body);
     if (!parsed.success || parsed.data.document !== document || parsed.data.offer.contracts.length !== 1 || parsed.data.offer.contracts[0] !== input.contract) throw new IntegrationError('invalid_response');
     const options = parsed.data.offer.installmentOptions;

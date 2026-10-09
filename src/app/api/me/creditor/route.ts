@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     if (error instanceof CreditorQueryError) {
       const response = apiError(503, 'CREDITOR_UNAVAILABLE', 'Não foi possível consultar a ARC4U. Tente novamente em alguns instantes.');
       const { requestId } = await response.clone().json();
-      console.warn(JSON.stringify({ event: 'creditor_query_failed', requestId, stage: error.stage, code: error.code, kind: error.diagnostic?.kind, status: error.diagnostic?.status }));
+      console.warn(JSON.stringify({ event: 'creditor_query_failed', requestId, stage: error.stage, code: error.code, kind: error.diagnostic?.kind, status: error.diagnostic?.status, reason: error.diagnostic?.reason }));
       return response;
     }
     if (error instanceof Arc4Error) {

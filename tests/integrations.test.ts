@@ -3,8 +3,16 @@ import assert from 'node:assert/strict';
 import { LealAuthClient } from '../src/server/integrations/leal';
 import { MetaOtpSender } from '../src/server/integrations/meta';
 import type { Fetcher } from '../src/server/integrations/http';
+import { requestJson } from '../src/server/integrations/http';
 const config = { authUrl: 'https://sic.example/auth/login', username: 'test', password: 'test' };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+
+test('HTTP failure diagnostics whitelist codes and discard private descriptions', async () => {
+  const known = await requestJson(async () => json({ error: 'invalid_client', error_description: 'private secret' }, 400), 'https://example.test', {});
+  assert.deepEqual(known, { status: 400, body: null, problem: 'invalid_client' });
+  const unknown = await requestJson(async () => json({ error: 'private secret', document: 'private' }, 400), 'https://example.test', {});
+  assert.deepEqual(unknown, { status: 400, body: null, problem: 'provider_validation' });
+});
 
 test('concurrent calls share login and expiry triggers renewal', async () => {
   let count = 0; let now = 0;

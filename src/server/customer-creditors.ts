@@ -5,7 +5,7 @@ import type { SicGateway } from './integrations/sic';
 import { arc4Bindings, Arc4Error, type Arc4Client } from './integrations/creditors/arc4';
 import { IntegrationError } from './integrations/http';
 
-type QueryStage = 'session' | 'sic_debts' | 'binding' | 'configuration' | 'arc4_balances' | 'arc4_agreements' | 'arc4_policies' | 'arc4_simulation' | 'arc4_details' | 'arc4_boleto';
+type QueryStage = 'session' | 'sic_debts' | 'binding' | 'configuration' | 'arc4_auth' | 'arc4_balances' | 'arc4_agreements' | 'arc4_policies' | 'arc4_simulation' | 'arc4_details' | 'arc4_boleto';
 export class CreditorQueryError extends Error {
   constructor(public readonly stage: QueryStage, public readonly code: IntegrationError['code'], public readonly diagnostic?: IntegrationError['diagnostic']) { super(`Creditor query failed: ${stage}/${code}`); }
 }
@@ -38,6 +38,7 @@ export class CustomerCreditorService {
     if (!binding || !scope.internalIds.some(id => String(id) === input.debtId)) throw new AccessError('invalid_request');
     const contracts = [...new Set(bindings.map(item => item.providerContract))];
     const client = await step('configuration', () => this.provider()); // Non-ARC4 and unowned records never initialize OAuth.
+    await step('arc4_auth', () => client.authenticate());
     if (input.action === 'overview') {
       const [balances, agreements] = await Promise.all([step('arc4_balances', () => client.balances(scope.document, [binding.providerContract])), step('arc4_agreements', () => client.agreements(scope.document, contracts))]);
       const policies = balances.length ? await step('arc4_policies', () => client.policies(scope.document, contracts, binding.providerContract)) : [];
