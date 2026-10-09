@@ -1,6 +1,6 @@
 import 'server-only';
 export class IntegrationError extends Error {
-  constructor(public readonly code: 'configuration' | 'unavailable' | 'unauthorized' | 'invalid_response') {
+  constructor(public readonly code: 'configuration' | 'unavailable' | 'unauthorized' | 'invalid_response', public readonly diagnostic?: { kind: 'timeout' | 'network' | 'http'; status?: number }) {
     super(`Integration error: ${code}`);
   }
 }
@@ -32,6 +32,6 @@ export async function requestJson(fetcher: Fetcher, url: string, init: RequestIn
     return { status: response.status, body };
   } catch (error) {
     if (error instanceof IntegrationError) throw error;
-    throw new IntegrationError('unavailable');
+    throw new IntegrationError('unavailable', { kind: error instanceof Error && ['TimeoutError', 'AbortError'].includes(error.name) ? 'timeout' : 'network' });
   }
 }

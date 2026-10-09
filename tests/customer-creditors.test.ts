@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CustomerCreditorService, creditorRequest } from '../src/server/customer-creditors';
+import { CustomerCreditorService, creditorRequest, CreditorQueryError } from '../src/server/customer-creditors';
+import { IntegrationError } from '../src/server/integrations/http';
 import { AccessError } from '../src/server/customer-access';
 import { Arc4Client, ARC4_TOKEN_URL } from '../src/server/integrations/creditors/arc4';
 import type { CustomerDebt } from '../src/server/integrations/sic';
@@ -32,5 +33,17 @@ test('invalid session, unowned debt and another creditor cannot initialize a pro
   for (const row of [{ ...debt, creditor: 'BTG' }, { ...debt, id: '2' }]) {
     const service = new CustomerCreditorService({ integrationScope: async () => scope }, { debts: async () => [row] }, provider);
     await assert.rejects(service.execute('s', 'b', { action: 'overview', debtId: row.id }), /invalid_request/);
+  }
+});
+
+test('creditor diagnostics retain only safe stage/code and never upstream error text', async () => {
+  const provider = () => { assert.fail('provider must not initialize'); };
+  for (const error of [new Error('private customer and credential data'), new IntegrationError('unavailable', { kind: 'timeout' })]) {
+    const service = new CustomerCreditorService({ integrationScope: async () => scope }, { debts: async () => { throw error; } }, provider);
+    await assert.rejects(service.execute('s', 'b', { action: 'overview', debtId: '1' }), e => {
+      assert.ok(e instanceof CreditorQueryError); assert.equal(e.stage, 'sic_debts');
+      assert.equal(e.message.includes('private'), false); assert.equal('cause' in e, false);
+      return true;
+    });
   }
 });
