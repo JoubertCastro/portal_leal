@@ -5,8 +5,18 @@ import { SicGateway } from './integrations/sic';
 import { CustomerAuthStore } from './customer-auth-store';
 import { CustomerAccessService } from './customer-access';
 import { getDatabase } from './database';
+import { Arc4Client } from './integrations/creditors/arc4';
+import { CustomerCreditorService } from './customer-creditors';
 // Lazy composition: build and preview never require credentials or call providers.
 let leal: LealAuthClient | undefined;
+let arc4: Arc4Client | undefined;
+export function getCustomerCreditors() {
+  const auth = getCustomerAuth();
+  return new CustomerCreditorService(auth.service, getSicGateway(), () => {
+    if (process.env.ARC4_ENABLED !== 'true') throw new Error('ARC4_UNAVAILABLE');
+    return arc4 ??= new Arc4Client({ clientId: process.env.ARC4_CLIENT_ID ?? '', clientSecret: process.env.ARC4_CLIENT_SECRET ?? '' });
+  });
+}
 export function getLealAuth(): LealAuthClient {
   return leal ??= new LealAuthClient({ authUrl: process.env.LEAL_AUTH_URL ?? '', username: process.env.LEAL_AUTH_USUARIO ?? '', password: process.env.LEAL_AUTH_SENHA ?? '' });
 }

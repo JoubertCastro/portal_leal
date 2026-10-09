@@ -84,18 +84,22 @@ export class CustomerAccessService {
     await this.analytics.record({name:'otp_requested'});
     return result;
   }
-  async portfolio(sessionToken: string, browserToken: string) {
+  async integrationScope(sessionToken: string, browserToken: string) {
     if (!tokenPattern.test(sessionToken) || !tokenPattern.test(browserToken)) throw new AccessError('unauthenticated');
     const tokenHash = hash(sessionToken);
     const session = await this.store.findSession(tokenHash);
     const now = this.now();
     if (!session || session.tokenHash !== tokenHash || session.browserTokenHash !== hash(browserToken) || session.revokedAt !== null || !Number.isFinite(session.expiresAt) || session.expiresAt <= now || !Number.isFinite(session.verifiedAt) || session.verifiedAt > now || session.verifiedAt >= session.expiresAt) throw new AccessError('unauthenticated');
     await this.limit('portfolio', tokenHash, 30, 60_000);
+    return session.scope;
+  }
+  async portfolio(sessionToken: string, browserToken: string) {
+    const scope = await this.integrationScope(sessionToken, browserToken);
     const started=this.now();
     let debts;let agreements;let customerName;
-    try{[debts,agreements,customerName]=await Promise.all([this.sic.debts(session.scope),this.sic.agreements(session.scope),this.sic.customerName(session.scope)]);}
+    try{[debts,agreements,customerName]=await Promise.all([this.sic.debts(scope),this.sic.agreements(scope),this.sic.customerName(scope)]);}
     catch(error){await this.analytics.record({name:'portfolio_failed',durationMs:Math.max(0,this.now()-started)});throw error;}
-    await this.analytics.record({name:'portfolio_loaded',debtCount:debts.length,agreementCount:agreements.length,durationMs:Math.max(0,this.now()-started)},{document:session.scope.document,verified:true});
+    await this.analytics.record({name:'portfolio_loaded',debtCount:debts.length,agreementCount:agreements.length,durationMs:Math.max(0,this.now()-started)},{document:scope.document,verified:true});
     return { debts, agreements, customerName };
   }
 }

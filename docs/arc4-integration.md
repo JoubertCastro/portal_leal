@@ -9,8 +9,10 @@ Checkpoint: 07/10/2026. Fonte: **Arc Documentação - Agreements Negotiate V2.pd
 - Em 08/10/2026, consultas reais com o CPF autorizado confirmaram um contrato SIC `ARC4U` e sua correspondência exata em `contracts` de um acordo BTG. Saldo retornou zero produtos, inclusive com `includeInAgreement` e `includeInInhibition`. A primeira página e o prefixo `/v2/negotiation/customers` funcionaram; múltiplas páginas continuam cobertas apenas por testes sintéticos. Diagnóstico com os próprios adapters passou: um vínculo, zero saldos, um acordo.
 - Corrigida a validação SIC que rejeitava contratos alfanuméricos, preservando o número integral e a rejeição de URLs, markup e caracteres de controle.
 - Detalhe do acordo consultado em 08/10/2026: `Acordo Liquidado`, uma parcela de índice 1 com estado `PAID`; documento, ID e todos os contratos de origem conferiram. Nenhum boleto foi solicitado. Esse cadastro não permite validar um boleto pendente nem uma simulação de nova dívida. A numeração observada nesse caso não estabelece uma regra universal para outros acordos.
-- Nenhuma rota pública, componente, runtime ou configuração de deploy usa esse conector ainda. Credenciais não foram gravadas no repositório. O portal atual permanece com o SIC.
-- Políticas, simulação sem persistência, detalhe de acordo e consulta de boletos estão implementados no adapter, sem rotas públicas. **Formalização não está implementada nem liberada**. Este checkpoint ainda não habilita a integração no portal/Railway.
+- Área logada conectada ao conector por `POST /api/me/creditor`: verificação de origem, sessão/navegador, expiração/revogação, limite compartilhado e revalidação do escopo SIC a cada ação. O navegador envia o ID do registro, nunca CPF, contrato externo ou URL do provedor.
+- Em “Minhas pendências”, contratos ARC4U oferecem consulta de condições/simulação e boletos; em “Meus acordos”, consulta de parcelas e boletos por contrato. Chamadas são sob demanda, sem dependência ARC4 no carregamento de `/api/me`. Falha do credor não substitui o portfólio SIC.
+- Runtime exige `ARC4_ENABLED=true`, `ARC4_CLIENT_ID` e `ARC4_CLIENT_SECRET` no serviço Railway. Segredos não estão no repositório nem no cliente. A publicação do código não configura essas variáveis automaticamente.
+- **Formalização não está implementada nem liberada**. Simulações indicam que nenhum acordo foi criado e encaminham a conclusão à equipe Leal. Boleto é entregue por resposta autenticada, attachment/no-store/nosniff, sem CPF/linha digitável na URL e sem armazenamento persistente no navegador.
 
 ### Validação adicional em produção — 08/10/2026
 
@@ -123,4 +125,6 @@ Modo opcional `ARC4_TEST_MODE=simulate` simula a primeira política do primeiro 
 
 Testes automatizados cobrem isolamento por registro/contrato, nenhuma chamada para credor sem vínculo, ambiguidades, documento divergente na resposta, paginação repetida/truncada, precisão, renovação OAuth, limites de retry e mensagens sanitizadas. Testes sintéticos não confirmam a semântica da API real.
 
-Próximos gates: boleto posterior com adesão já efetivada; confirmação do header `createdBy` e formalização; persistência idempotente; rotas autenticadas e testes de propriedade/concorrência; UI de revisão; teste ponta a ponta; então ativação gradual no Railway.
+Testes da ligação ao portal: autenticação e autorização antes de inicializar provider, rejeição de CPF/contrato injetado no body, origem inválida/ausência de sessão, consulta sob demanda, simulação e download PDF em desktop/mobile. Fixtures de interface são sintéticas; não substituem login real com WhatsApp após a configuração Railway.
+
+Próximos gates: ativação das variáveis Railway e teste da jornada autenticada real; boleto posterior com adesão já efetivada; confirmação do header `createdBy` e formalização; persistência idempotente e testes de concorrência da contratação.

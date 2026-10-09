@@ -72,3 +72,5 @@
 .creditor-identity { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 14px; max-width: 100%; }
 .creditor-logo { width: 100px; height: 44px; object-fit: contain; background: white; border-radius: 5px; padding: 4px; }
 .creditor-identity > span, .contract-number, .customer-area .page-heading h1 { overflow-wrap: anywhere; }
+
+.creditor-actions{margin-top:1.25rem;border-top:1px solid var(--line,#ddd);padding-top:1.25rem}.creditor-result{margin-top:1.25rem;overflow-wrap:anywhere}.creditor-form{display:grid;gap:1rem;max-width:36rem;margin:1.5rem 0}.creditor-form label{display:grid;gap:.5rem}.creditor-form select{width:100%;min-width:0;min-height:48px;border:1px solid #cfcbbd;border-radius:8px;padding:.75rem;background:#fff;color:#292a20;font:inherit}.creditor-actions h4{font-size:1.1rem;margin:1rem 0}.creditor-actions ul{padding-left:1.2rem}.creditor-agreement,.creditor-detail{padding:1rem 0;border-top:1px solid #e8e5dc}.creditor-actions .button{white-space:normal;text-align:center}.creditor-actions [role=alert]{color:#933b24}
