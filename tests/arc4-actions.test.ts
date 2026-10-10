@@ -20,6 +20,31 @@ const pdf = Buffer.from('%PDF-1.7\nsynthetic test fixture\n%%EOF');
 const boleto = { idAgreement: id, buffer: pdf.toString('base64'), barCode: '1'.repeat(44), digitableLine: '1'.repeat(47) };
 const simulation = { document, offer: { contracts: [contract], installmentOptions: [{ installmentsCount: 1, totalValueWithDiscount: 100, totalDiscountValue: 0, monthlyInterestRate: 0, annualInterestRate: 0, cetRate: 0, installments: [installment] }] } };
 
+test('formalization uses persisted offer, explicit bureau and bank-slip methods; ambiguous POST is never retried', async () => {
+  let created = 0;
+  const offerId = otherId;
+  const client = new Arc4Client(credentials, async (url, init) => {
+    if (url === ARC4_TOKEN_URL) return token();
+    const path = new URL(String(url)).pathname;
+    if (path.endsWith('/balance')) return json({ document, totalContracts: 1, customerBalance: { products: [{ contract, name: 'Produto', balance: { curveValue: 100 } }] } });
+    if (path.endsWith('/policies')) return json([policy]);
+    const body = JSON.parse(String(init?.body));
+    if (path.endsWith('/offers')) {
+      assert.equal(body.simulated, false); assert.equal(body.skipBillingValidation, false);
+      return json({ ...simulation, offer: { ...simulation.offer, id: offerId, status: 'OPEN', overlimitDiscountRequest: false, firstPaymentOptions: [{ id: 1, name: 'BANKSLIP' }], installmentsPaymentOptions: [{ id: 1, name: 'BANKSLIP' }] } });
+    }
+    assert.ok(path.endsWith('/agreements')); assert.equal(init?.method, 'POST');
+    assert.equal(new Headers(init?.headers).get('createdBy'), 'Leal'); assert.equal(body.offerId, offerId); assert.equal(body.skipBillingValidation, false);
+    assert.equal(body.firstPaymentMethodId, 1); assert.equal(body.installmentsPaymentMethodId, 1); created++;
+    throw new Error('ambiguous network response');
+  });
+  const persisted = await client.persistOffer(document, [contract], input);
+  await assert.rejects(client.createAgreement(document, [contract], { offerId: persisted.offerId, installmentsCount: 1, firstPaymentMethodId: persisted.firstPaymentMethodId, installmentsPaymentMethodId: persisted.installmentsPaymentMethodId }, 'Leal', id), /unavailable/);
+  assert.equal(created, 1);
+  await assert.rejects(client.createAgreement(document, [contract], { offerId, installmentsCount: 1, firstPaymentMethodId: 2, installmentsPaymentMethodId: 1 }, 'Leal', id), /configuration/);
+  assert.equal(created, 1);
+});
+
 test('simulation revalidates balances/policy and forces non-persistence with zero entry for one installment', async () => {
   let posts = 0;
   const client = new Arc4Client(credentials, async (url, init) => {

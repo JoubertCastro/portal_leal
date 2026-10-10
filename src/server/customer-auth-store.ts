@@ -48,16 +48,24 @@ export class CustomerAuthStore implements CustomerAccessStore,CodeChallengeIssue
       const data=this.open<{scope:RecordScope;phone:string;consent:IssueInput['consent']}>(r.rows[0].payload,'challenge:'+idHash);
       const token=randomBytes(32).toString('base64url');const tokenHash=hash(token);
       await c.query("UPDATE leal_auth.challenges SET state='consumed',attempts=0 WHERE id_hash=$1",[idHash]);
-      await c.query("INSERT INTO leal_auth.sessions(token_hash,browser_hash,payload,verified_at,expires_at) VALUES($1,$2,$3,now(),now()+interval '30 minutes')",[tokenHash,browserHash,this.seal(data.scope,'session:'+tokenHash)]);
+      await c.query("INSERT INTO leal_auth.sessions(token_hash,browser_hash,payload,verified_at,expires_at) VALUES($1,$2,$3,now(),now()+interval '30 minutes')",[tokenHash,browserHash,this.seal({...data.scope,verifiedPhone:data.phone},'session:'+tokenHash)]);
       await c.query('INSERT INTO leal_auth.consents(challenge_hash,payload) VALUES($1,$2)',[idHash,this.seal({phone:data.phone,document:data.scope.document,consent:data.consent},'consent:'+idHash)]);
       return token;
     });
   }
   async findSession(tokenHash:string):Promise<VerifiedCustomerSession|null>{
     const r=await this.db.query('SELECT * FROM leal_auth.sessions WHERE token_hash=$1 AND expires_at>now() AND revoked_at IS NULL',[tokenHash]);if(!r.rowCount)return null;const s=r.rows[0];
-    return {tokenHash,browserTokenHash:s.browser_hash,scope:this.open<RecordScope>(s.payload,'session:'+tokenHash),verifiedAt:new Date(s.verified_at).valueOf(),expiresAt:new Date(s.expires_at).valueOf(),revokedAt:null};
+    const payload=this.open<RecordScope & {verifiedPhone?:string}>(s.payload,'session:'+tokenHash);
+    const scope:RecordScope={document:payload.document,identityKey:payload.identityKey,internalIds:payload.internalIds,...(payload.acceptedNames?{acceptedNames:payload.acceptedNames}:{})};
+    return {tokenHash,browserTokenHash:s.browser_hash,scope,verifiedAt:new Date(s.verified_at).valueOf(),expiresAt:new Date(s.expires_at).valueOf(),revokedAt:null};
   }
   async revoke(token:string){await this.db.query('UPDATE leal_auth.sessions SET revoked_at=now() WHERE token_hash=$1',[hash(token)]);}
+  async verifiedPhone(token:string,browser:string):Promise<string|null>{
+    const r=await this.db.query('SELECT payload FROM leal_auth.sessions WHERE token_hash=$1 AND browser_hash=$2 AND expires_at>now() AND revoked_at IS NULL',[hash(token),hash(browser)]);
+    if(!r.rowCount)return null;
+    const payload=this.open<{verifiedPhone?:string}>(r.rows[0].payload,'session:'+hash(token));
+    return payload.verifiedPhone&&/^\+[1-9]\d{7,14}$/.test(payload.verifiedPhone)?payload.verifiedPhone:null;
+  }
   async maintain(){await transaction(this.db,async c=>{
     await c.query('DELETE FROM leal_auth.selections WHERE expires_at<now()');
     await c.query("DELETE FROM leal_auth.challenges WHERE created_at<now()-interval '1 day'");

@@ -12,7 +12,7 @@ Checkpoint: 07/10/2026. Fonte: **Arc Documentação - Agreements Negotiate V2.pd
 - Área logada conectada ao conector por `POST /api/me/creditor`: verificação de origem, sessão/navegador, expiração/revogação, limite compartilhado e revalidação do escopo SIC a cada ação. O navegador envia o ID do registro, nunca CPF, contrato externo ou URL do provedor.
 - Em “Minhas pendências”, contratos ARC4U oferecem consulta de condições/simulação e boletos; em “Meus acordos”, consulta de parcelas e boletos por contrato. Chamadas são sob demanda, sem dependência ARC4 no carregamento de `/api/me`. Falha do credor não substitui o portfólio SIC.
 - Runtime exige `ARC4_ENABLED=true`, `ARC4_CLIENT_ID` e `ARC4_CLIENT_SECRET` no serviço Railway. Segredos não estão no repositório nem no cliente. A publicação do código não configura essas variáveis automaticamente.
-- **Formalização não está implementada nem liberada**. Simulações indicam que nenhum acordo foi criado e encaminham a conclusão à equipe Leal. Boleto é entregue por resposta autenticada, attachment/no-store/nosniff, sem CPF/linha digitável na URL e sem armazenamento persistente no navegador.
+- **Atualização de 09/10/2026:** formalização implementada, condicionada a `ARC4_CREATED_BY`. O operador indicou `Leal`. Resumo, aceite e confirmação por arraste precedem o POST real. A criação real não foi executada pelo agente; depende da confirmação de um cliente no portal. Boleto é entregue em sessão autenticada, sem URL pública.
 
 ### Validação adicional em produção — 08/10/2026
 
@@ -78,7 +78,7 @@ Na ligação com o portal, extrair a validação de sessão do serviço atual pa
 
 ### Persistência para a próxima etapa
 
-Migrations ainda não criadas: faltam o contrato de mapeamento e a validação dos identificadores reais.
+Migrations `004_creditor_agreements.sql` e `005_creditor_retention.sql` implementam ofertas locais cifradas, consentimento, operações e controle de duplicidade de envios. O vínculo do contrato continua derivado do SIC a cada requisição.
 
 - Cadastro de provedores/carteiras: código estável, provedor, versão e capacidades habilitadas; sem segredos no banco.
 - Vínculos: registro SIC, referência do sujeito com HMAC, provedor e contrato externo cifrado; unicidade por registro/provedor, auditoria de aprovação e versão do vínculo.
@@ -128,3 +128,24 @@ Testes automatizados cobrem isolamento por registro/contrato, nenhuma chamada pa
 Testes da ligação ao portal: autenticação e autorização antes de inicializar provider, rejeição de CPF/contrato injetado no body, origem inválida/ausência de sessão, consulta sob demanda, simulação e download PDF em desktop/mobile. Fixtures de interface são sintéticas; não substituem login real com WhatsApp após a configuração Railway.
 
 Próximos gates: ativação das variáveis Railway e teste da jornada autenticada real; boleto posterior com adesão já efetivada; confirmação do header `createdBy` e formalização; persistência idempotente e testes de concorrência da contratação.
+
+
+## Contratação e envio de boleto — 09/10/2026
+
+- `ARC4_CREATED_BY=Leal`, conforme identificação indicada pelo operador. O token OAuth inspecionado contém apenas `agreement/any`, sem claim de bureau. O valor enviado foi configurado pelo operador; a aceitação do header na formalização ainda será validada no primeiro acordo real.
+- POST `/agreements` segue a lista de rotas e descrição da formalização; o GET com body da página 37 é uma inconsistência do manual. Sem teste destrutivo para adivinhar a rota.
+- A simulação retorna um `quoteId` aleatório, válido por 15 minutos. Snapshot cifrado AES-256-GCM contém contrato, todas as parcelas, valores, juros e texto/versionamento do aceite. O banco guarda data do aceite, sessão com hash e opção escolhida. Nenhum CPF ou telefone em texto puro nessas tabelas.
+- `confirm` exige `accepted=true`, versão do aviso e uma oferta da sessão, do documento e do contrato autorizados. Valores, métodos e IDs externos nunca vêm do browser.
+- Antes de formalizar: nova simulação não persistida, conferência das condições, oferta persistida (`simulated=false`), nova conferência e POST real. Apenas métodos BANKSLIP (IDs 1 ou 3) explicitamente retornados pela oferta. Todos os desvios de alçada, débito em conta e bypass de acordos/boletagem ficam desativados.
+- Comparação usa a precisão monetária apresentada ao cliente, todas as datas, índices, quantidade e taxas. Oferta com múltiplas alternativas da mesma quantidade é recusada para evitar seleção ambígua na API.
+- Lock persistente por documento/credor/contrato e índice único impedem duas formalizações entre abas, sessões e réplicas. Uma resposta perdida deixa a operação em `unknown`; não há retry automático dos POSTs. A equipe precisa reconciliar na ARC4 antes de liberar outra intenção. Um acordo criado mantém esse bloqueio para o contrato até revisão operacional — não apagar para contornar uma falha.
+- Depois da confirmação, o portal consulta o acordo e busca o boleto se estiver VALIDATED sem parcela paga. Se o credor ainda processa, o cliente vê o acompanhamento e pode consultar novamente. Pagamentos posteriores continuam condicionados ao estado oficial do acordo.
+- O controle de arrastar não confirma por toque simples. Exige checkbox e gesto completo; teclado permite setas/End e Enter. Modal nativo mantém foco e bloqueia interação com o fundo. Não há confirmação automática ou por fechar o modal.
+- `META_BOLETO_TEMPLATE=enviar_boleto` e `META_BOLETO_LANGUAGE=pt_BR` são os defaults. Reutiliza versão Graph, phone ID e token já existentes. Template com cabeçalho DOCUMENT foi confirmado pelo operador. Corpo: Nome, Valor da parcela, Vencimento, nessa ordem.
+- Envio é solicitado no botão “Enviar boleto no WhatsApp”. Destino exclusivamente do telefone verificado no login, cifrado na sessão; não aceita número no body. Sessões anteriores à atualização precisam de novo login para guardar esse vínculo.
+- PDF validado é enviado ao endpoint `/media` da Meta e referenciado pelo ID no template, sem criar link público. Nome é obtido do cadastro no escopo da sessão; valor/data do detalhe validado da parcela. Uma solicitação por documento/acordo/parcela é protegida por chave persistente. Resposta HTTP 200 significa aceita pela Meta, não comprovante de entrega; retorno incerto bloqueia reenvio automático e mantém download disponível.
+- `auth:maintenance` elimina simulações abandonadas vencidas há mais de um dia, em lotes de 2.000. Registros aceitos, bloqueios de operações incertas e comprovantes de envio não são expurgados automaticamente: sua retenção e reconciliação precisam de procedimento operacional definido antes de ampliar a operação.
+- Permissões de runtime: uso do schema, SELECT/INSERT/UPDATE nas tabelas e execução da função restrita de limpeza. Sem poder de criar tabelas ou apagar aceitações por esse fluxo.
+- Validação: build, types, lint, testes com PostgreSQL embarcado, proteção contra repetição/troca de sessão/condições alteradas, contrato da Meta e jornada desktop/mobile com provedor sintético. Uma simulação real confirmou métodos BANKSLIP para adesão e parcelas, mantendo `simulated=true`. Nenhum acordo real foi criado e nenhum boleto foi enviado a um cliente pelo agente nesta implementação.
+
+Referência do envio de documento: [Meta — Document Media Object](https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/types/DocumentMediaObject/).

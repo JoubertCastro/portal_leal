@@ -4,7 +4,8 @@ import { validDocument } from '../../../domain/document';
 import { IntegrationError, requestJson, type Fetcher } from '../http';
 import type { CreditorBalance, CreditorBinding, CreditorProvider } from './registry';
 import type { CustomerDebt } from '../sic';
-import { policiesSchema, simulationSchema, installmentSchema, firstPaymentSchema, installmentPaymentSchema, decodeBoleto } from './arc4-schemas';
+import { policiesSchema, simulationSchema, persistedOfferSchema, apiDate, installmentSchema, firstPaymentSchema, installmentPaymentSchema, decodeBoleto } from './arc4-schemas';
+import type { AgreementSelection } from '../../../domain/agreement';
 
 export const ARC4_TOKEN_URL = 'https://btg-agreement.auth.sa-east-1.amazoncognito.com/oauth2/token';
 export const ARC4_BASE_URL = 'https://agreements-api.btgpactual.com/v2/negotiation';
@@ -56,7 +57,7 @@ export class Arc4Error extends Error {
 }
 
 /** One instance per process: shared service token, no shared customer-data cache.
- * No arbitrary URLs, POST retries, or agreement mutations are exposed here.
+ * Mutations are invoked only by the durable agreement service. No POST retries.
  */
 export class Arc4Client implements CreditorProvider {
   readonly key = ARC4_INTEGRATION_KEY;
@@ -170,7 +171,7 @@ export class Arc4Client implements CreditorProvider {
     if (!result.success || new Set(result.data.map(policy => policy.code)).size !== result.data.length) throw new IntegrationError('invalid_response');
     return result.data;
   }
-  async simulate(document: string, authorizedContracts: readonly string[], input: { contract: string; policyCode: string; firstPaymentDate: string; installmentsCount: number }) {
+  private async offer(document: string, authorizedContracts: readonly string[], input: AgreementSelection, simulated: boolean) {
     assertTarget(document, authorizedContracts);
     if (!authorizedContracts.includes(input.contract)) throw new IntegrationError('unauthorized');
     if (!Number.isInteger(input.installmentsCount) || input.installmentsCount < 1 || input.installmentsCount > 999) throw new Arc4Error('invalid_selection');
@@ -184,7 +185,7 @@ export class Arc4Client implements CreditorProvider {
       method: 'POST', headers: { Authorization: `Bearer ${await this.token()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ contracts: [input.contract], policyCode: policy.code, firstPaymentDate: input.firstPaymentDate,
         installmentsCount: input.installmentsCount, installmentEntry: input.installmentsCount === 1 ? 0 : policy.minimumEntryAmount,
-        simulated: true, overlimitDiscountRequest: false, ignoreExistingForSimulation: false,
+        simulated, overlimitDiscountRequest: false, ignoreExistingForSimulation: false,
         ignoreInputValueValidationForSimulation: false, skipBillingValidation: false }),
     });
     // POST is never retried, including 401, timeouts and ambiguous failures.
@@ -196,8 +197,35 @@ export class Arc4Client implements CreditorProvider {
     if (!parsed.success || parsed.data.document !== document || parsed.data.offer.contracts.length !== 1 || parsed.data.offer.contracts[0] !== input.contract) throw new IntegrationError('invalid_response');
     const options = parsed.data.offer.installmentOptions;
     if (options.some(option => option.installmentsCount !== input.installmentsCount || option.installments.length !== option.installmentsCount || new Set(option.installments.map(item => item.index)).size !== option.installments.length)) throw new IntegrationError('invalid_response');
-    // No offer IDs, account numbers, commission structures or raw debts cross this DTO.
-    return { contract: input.contract, options };
+    return { contract: input.contract, options, raw: result.body };
+  }
+  async simulate(document: string, authorizedContracts: readonly string[], input: AgreementSelection) {
+    const { contract, options } = await this.offer(document, authorizedContracts, input, true);
+    return { contract, options };
+  }
+  async persistOffer(document: string, authorizedContracts: readonly string[], input: AgreementSelection) {
+    const result = await this.offer(document, authorizedContracts, input, false);
+    const parsed = persistedOfferSchema.safeParse(result.raw);
+    if (!parsed.success) throw new IntegrationError('invalid_response');
+    const offer = parsed.data.offer;
+    // Only bank slips explicitly offered by the creditor. Never choose account debit or app signature.
+    const first = offer.firstPaymentOptions.find(method => [1, 3].includes(method.id) && method.name.includes('BANKSLIP'));
+    const later = offer.installmentsPaymentOptions.find(method => [1, 3].includes(method.id) && method.name.includes('BANKSLIP'));
+    if (!first || !later) throw new Arc4Error('invalid_selection');
+    return { offerId: offer.id, options: result.options, firstPaymentMethodId: first.id, installmentsPaymentMethodId: later.id };
+  }
+  async createAgreement(document: string, contracts: readonly string[], input: { offerId: string; installmentsCount: number; firstPaymentMethodId: number; installmentsPaymentMethodId: number }, createdBy: string, fingerprint: string) {
+    assertTarget(document, contracts);
+    if (!z.uuid().safeParse(input.offerId).success || !/^[A-Za-z0-9_.-]{1,128}$/.test(createdBy) || !z.uuid().safeParse(fingerprint).success || ![1, 3].includes(input.firstPaymentMethodId) || ![1, 3].includes(input.installmentsPaymentMethodId) || !Number.isInteger(input.installmentsCount) || input.installmentsCount < 1 || input.installmentsCount > 999) throw new IntegrationError('configuration');
+    const result = await requestJson(this.fetcher, `${ARC4_BASE_URL}/customers/${document}/agreements`, {
+      method: 'POST', headers: { Authorization: `Bearer ${await this.token()}`, 'Content-Type': 'application/json', createdBy },
+      body: JSON.stringify({ ...input, fingerprint, skipBillingValidation: false }),
+    });
+    // Never retry this POST, even after 401 or an unknown transport outcome.
+    if (![200, 201].includes(result.status)) throw new IntegrationError('unavailable', { kind: 'http', status: result.status, reason: result.problem });
+    const parsed = z.object({ offerId: z.uuid(), agreementId: z.uuid(), dueDate: apiDate }).safeParse(result.body);
+    if (!parsed.success || parsed.data.offerId !== input.offerId) throw new IntegrationError('invalid_response');
+    return parsed.data;
   }
   async agreementDetail(document: string, authorizedContracts: readonly string[], agreementId: string) {
     assertTarget(document, authorizedContracts);

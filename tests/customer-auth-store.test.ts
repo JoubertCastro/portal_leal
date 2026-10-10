@@ -28,8 +28,11 @@ test('shared OTP storage encrypts scope, limits attempts, consumes once and bind
     const token=await store.verify(challenge.challengeId,browser,code);assert.ok(token);
     assert.equal(await store.verify(challenge.challengeId,browser,code),null);
     const session=await store.findSession(hash(token));assert.deepEqual(session?.scope,scope);
+    assert.equal(await store.verifiedPhone(token,browser),input.phone);
+    assert.equal(await store.verifiedPhone(token,'another-browser'),null);
     assert.equal((await pg.query<{n:number}>('SELECT count(*)::int AS n FROM leal_auth.consents')).rows[0].n,1);
     await store.revoke(token);assert.equal(await store.findSession(hash(token)),null);
+    assert.equal(await store.verifiedPhone(token,browser),null);
     const locked=await store.issue({...input,phone:'+5561988888888'});const lockedCode=code;const lockedWrong=code==='000000'?'000001':'000000';
     for(let attempt=0;attempt<5;attempt++)assert.equal(await store.verify(locked.challengeId,browser,lockedWrong),null);
     assert.equal(await store.verify(locked.challengeId,browser,lockedCode),null);

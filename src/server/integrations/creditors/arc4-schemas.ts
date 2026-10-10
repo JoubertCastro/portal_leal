@@ -32,6 +32,11 @@ export const simulationSchema = z.object({
     })).min(1).max(100),
   }),
 });
+export const persistedOfferSchema = simulationSchema.extend({ offer: simulationSchema.shape.offer.extend({
+  id: z.uuid(), status: z.literal('OPEN'), overlimitDiscountRequest: z.literal(false),
+  firstPaymentOptions: z.array(z.object({ id: z.number().int(), name: z.string().max(100) })).max(20),
+  installmentsPaymentOptions: z.array(z.object({ id: z.number().int(), name: z.string().max(100) })).max(20),
+}) });
 export const installmentSchema = z.object({
   index: z.number().int().min(0).max(999), dueDate: apiDate,
   // Future installments can omit status; null means unknown, never proof of non-payment.

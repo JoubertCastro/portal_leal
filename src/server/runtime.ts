@@ -7,6 +7,9 @@ import { CustomerAccessService } from './customer-access';
 import { getDatabase } from './database';
 import { Arc4Client } from './integrations/creditors/arc4';
 import { CustomerCreditorService } from './customer-creditors';
+import { AgreementStore } from './agreement-store';
+import { AgreementService } from './agreement-service';
+import { MetaBoletoSender } from './integrations/meta-boleto';
 // Lazy composition: build and preview never require credentials or call providers.
 let leal: LealAuthClient | undefined;
 let arc4: Arc4Client | undefined;
@@ -15,6 +18,9 @@ export function getCustomerCreditors() {
   return new CustomerCreditorService(auth.service, getSicGateway(), () => {
     if (process.env.ARC4_ENABLED !== 'true') throw new Error('ARC4_UNAVAILABLE');
     return arc4 ??= new Arc4Client({ clientId: process.env.ARC4_CLIENT_ID ?? '', clientSecret: process.env.ARC4_CLIENT_SECRET ?? '' });
+  }, new AgreementService(new AgreementStore(getDatabase(), process.env.AUTH_ENCRYPTION_KEY ?? '', process.env.AUTH_DIGEST_KEY ?? ''), process.env.ARC4_CREATED_BY?.trim() ?? ''), {
+    phone: (session, browser) => auth.store.verifiedPhone(session, browser),
+    sender: () => new MetaBoletoSender({ version: process.env.META_GRAPH_VERSION ?? '', phoneNumberId: process.env.META_PHONE_NUMBER_ID ?? '', accessToken: process.env.META_ACCESS_TOKEN ?? '', template: process.env.META_BOLETO_TEMPLATE ?? 'enviar_boleto', language: process.env.META_BOLETO_LANGUAGE ?? 'pt_BR' }),
   });
 }
 export function getLealAuth(): LealAuthClient {

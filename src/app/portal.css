@@ -74,3 +74,30 @@
 .creditor-identity > span, .contract-number, .customer-area .page-heading h1 { overflow-wrap: anywhere; }
 
 .creditor-actions{margin-top:1.25rem;border-top:1px solid var(--line,#ddd);padding-top:1.25rem}.creditor-result{margin-top:1.25rem;overflow-wrap:anywhere}.creditor-form{display:grid;gap:1rem;max-width:36rem;margin:1.5rem 0}.creditor-form label{display:grid;gap:.5rem}.creditor-form select{width:100%;min-width:0;min-height:48px;border:1px solid #cfcbbd;border-radius:8px;padding:.75rem;background:#fff;color:#292a20;font:inherit}.creditor-actions h4{font-size:1.1rem;margin:1rem 0}.creditor-actions ul{padding-left:1.2rem}.creditor-agreement,.creditor-detail{padding:1rem 0;border-top:1px solid #e8e5dc}.creditor-actions .button{white-space:normal;text-align:center}.creditor-actions [role=alert]{color:#933b24}
+.agreement-modal { border: 1px solid #ddd7c5; border-radius: 24px; width: min(620px, calc(100vw - 28px)); max-height: calc(100dvh - 32px); padding: 30px; background: #fffefa; color: #292a20; box-shadow: 0 24px 100px #0004; overscroll-behavior: contain; }
+.agreement-modal::backdrop { background: #20251dc9; backdrop-filter: blur(4px); }
+.agreement-modal-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.agreement-modal h2 { font-size: clamp(24px, 4vw, 32px); margin: 14px 0; letter-spacing: -.03em; line-height: 1.15; }
+.agreement-modal p { line-height: 1.6; }
+.agreement-summary { margin: 22px 0; padding: 22px; background: #eeeee3; border: 1px solid #dedfcf; border-radius: 16px; overflow-wrap: anywhere; }
+.agreement-summary > span { display: block; margin: 18px 0 4px; font-size: 13px; }
+.agreement-summary > strong { font-size: 34px; display: block; }
+.agreement-schedule { list-style: none; padding: 0; max-height: 210px; overflow: auto; border-block: 1px solid #ddd7c5; }
+.agreement-schedule li { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 13px 4px; border-bottom: 1px solid #e9e6dc; font-size: 14px; }
+.agreement-accept { display: flex; align-items: flex-start; gap: 12px; padding: 18px 0; font-size: 14px; line-height: 1.6; cursor: pointer; }
+.agreement-accept input { width: 22px; height: 22px; flex: 0 0 22px; margin-top: 3px; accent-color: #69632e; }
+.agreement-hint, .agreement-rates { font-size: 12px; color: #666756; margin: 10px 0; }
+.agreement-slide { position: relative; height: 58px; border-radius: 14px; background: #555e33; color: white; margin-top: 18px; isolation: isolate; overflow: hidden; }
+.agreement-slide > span { position: absolute; inset: 0 0 0 56px; display: grid; place-items: center; font-size: 13px; padding: 0 8px; pointer-events: none; }
+.agreement-slide-fill { height: 100%; background: #879251; position: absolute; z-index: -1; pointer-events: none; }
+.agreement-slide-handle { position: absolute; top: 3px; width: 52px; height: 52px; border-radius: 12px; border: 1px solid #dad5b8; background: #fffefa; color: #4b522b; font-size: 27px; cursor: grab; touch-action: none; user-select: none; }
+.agreement-slide-handle:active { cursor: grabbing; }
+.agreement-slide-handle:focus-visible { outline: 3px solid #c8a53b; outline-offset: -5px; }
+.agreement-slide.is-locked { opacity: .55; }
+.agreement-document-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.agreement-operation { background: #f0f1e7; border: 1px solid #d8dec7; border-radius: 14px; padding: 20px; margin: 18px 0; }
+.agreement-simulation { margin: 20px 0; }
+.agreement-pdf { margin-top: 20px; }
+.agreement-pdf iframe { width: 100%; height: 600px; border: 1px solid #d8dec7; margin-top: 12px; }
+.specialist-button { margin-top: 20px; }
+@media(max-width: 600px) { .agreement-modal { padding: 20px; border-radius: 18px; } .agreement-summary { padding: 16px; } .agreement-summary > strong { font-size: 29px; } .agreement-slide > span { font-size: 12px; } .agreement-document-actions .button { width: 100%; } .agreement-pdf iframe { height: 420px; } }

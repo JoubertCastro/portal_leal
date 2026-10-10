@@ -24,6 +24,8 @@ test('creditor service derives document/contract from verified scope, never the 
   assert.equal(calls, 3);
   assert.equal(creditorRequest.safeParse({ action: 'overview', debtId: '1', document: 'other' }).success, false);
   assert.equal(creditorRequest.safeParse({ action: 'simulate', debtId: '1', contract: 'OTHER', policyCode: 'A', firstPaymentDate: '2026-01-01', installmentsCount: 1 }).success, false);
+  assert.equal(creditorRequest.safeParse({ action: 'send-boleto', debtId: '1', agreementId: '550e8400-e29b-41d4-a716-446655440000', phone: '+5561999999999' }).success, false);
+  assert.equal(creditorRequest.safeParse({ action: 'confirm', debtId: '1', quoteId: '550e8400-e29b-41d4-a716-446655440000', optionIndex: 0, accepted: false, noticeVersion: '2026-10-09-v1' }).success, false);
 });
 
 test('invalid session, unowned debt and another creditor cannot initialize a provider', async () => {

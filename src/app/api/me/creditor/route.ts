@@ -5,6 +5,7 @@ import { authBody, authFailure, browserCookie, sessionCookie } from '@/server/cu
 import { authReadiness, getCustomerCreditors } from '@/server/runtime';
 import { creditorRequest, CreditorQueryError } from '@/server/customer-creditors';
 import { Arc4Error } from '@/server/integrations/creditors/arc4';
+import { AgreementError } from '@/server/agreement-service';
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
   if (!validOrigin(request)) return apiError(403, 'ORIGIN_DENIED', 'Solicitação não permitida.');
@@ -17,6 +18,16 @@ export async function POST(request: Request) {
     if (result.kind === 'pdf') return new Response(new Uint8Array(result.pdf), { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="boleto-leal.pdf"', 'Cache-Control': 'no-store, private', 'X-Content-Type-Options': 'nosniff' } });
     return NextResponse.json(result.data, { headers: { 'Cache-Control': 'no-store, private' } });
   } catch (error) {
+    if (error instanceof AgreementError) {
+      const messages = {
+        configuration: 'A contratação está sendo preparada. Fale com nossos especialistas para concluir.',
+        expired: 'A simulação expirou. Simule novamente e confira as condições antes de confirmar.',
+        changed: 'As condições mudaram. Nenhum acordo foi formalizado nesta tentativa. Faça uma nova simulação e confira o resumo.',
+        unknown: 'Sua confirmação foi registrada, mas ainda não conseguimos confirmar o resultado no credor. Não faça outro acordo; atualize o acompanhamento ou fale com nossos especialistas.',
+        busy: 'Sua confirmação está sendo processada. Acompanhe o resultado sem confirmar novamente.',
+      };
+      return apiError(409, 'AGREEMENT_' + error.code.toUpperCase(), messages[error.code]);
+    }
     if (error instanceof CreditorQueryError) {
       const response = apiError(503, 'CREDITOR_UNAVAILABLE', 'Não foi possível consultar a ARC4U. Tente novamente em alguns instantes.');
       const { requestId } = await response.clone().json();
