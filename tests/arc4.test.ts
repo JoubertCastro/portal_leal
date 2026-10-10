@@ -25,6 +25,24 @@ test('ARC4 OAuth uses form/basic, shares concurrent login and renews before expi
   await client.authenticate(); assert.equal(calls, 2);
 });
 
+test('ARC4 trims pasted credential boundaries without mutating configuration', async () => {
+  const pasted = { clientId: ' test\r\n', clientSecret: '\ufefftest-secret\u00a0' };
+  const original = { ...pasted };
+  const client = new Arc4Client(pasted, async (_url, init) => {
+    assert.equal(new Headers(init?.headers).get('Authorization'), 'Basic dGVzdDp0ZXN0LXNlY3JldA==');
+    return token();
+  });
+  await client.authenticate();
+  assert.deepEqual(pasted, original);
+});
+
+test('ARC4 rejects empty credentials and internal whitespace or control characters', () => {
+  for (const clientSecret of [' \u00a0', 'test secret', 'test\nsecret', 'test\u00a0secret', 'test\u0000secret']) {
+    assert.throws(() => new Arc4Client({ ...credentials, clientSecret }), /configuration/);
+  }
+  assert.throws(() => new Arc4Client({ ...credentials, clientId: 'te st' }), /configuration/);
+});
+
 test('ARC4 paginates, filters contracts and preserves upstream decimal precision', async () => {
   let pages = 0;
   const client = new Arc4Client(credentials, async url => {

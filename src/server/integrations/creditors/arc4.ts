@@ -64,7 +64,9 @@ export class Arc4Client implements CreditorProvider {
   private cached?: { value: string; expiresAt: number };
   private pending?: Promise<string>;
   constructor(private credentials: { clientId: string; clientSecret: string }, private fetcher: Fetcher = fetch, private now = Date.now) {
-    if (!/^[a-zA-Z0-9]{1,128}$/.test(credentials.clientId) || !credentials.clientSecret || credentials.clientSecret.length > 512) throw new IntegrationError('configuration');
+    // Pasted environment values can contain trailing non-breaking spaces or newlines.
+    this.credentials = { clientId: credentials.clientId.trim(), clientSecret: credentials.clientSecret.trim() };
+    if (!/^[a-zA-Z0-9]{1,128}$/.test(this.credentials.clientId) || !/^[\x21-\x7e]{1,512}$/.test(this.credentials.clientSecret)) throw new IntegrationError('configuration');
   }
   async authenticate(): Promise<void> { await this.token(); }
   private async token(): Promise<string> {
