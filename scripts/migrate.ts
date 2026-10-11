@@ -33,6 +33,12 @@ try {
       const url = new URL(process.env.DATABASE_ADMIN_URL!); url.username = 'leal_portal_runtime'; url.password = password; runtimeUrl = url.href;
     }
     await client.query('GRANT USAGE ON SCHEMA leal_audit TO leal_portal_runtime');
+    await client.query('GRANT USAGE ON SCHEMA leal_admin TO leal_portal_runtime');
+    await client.query('GRANT SELECT,UPDATE ON leal_admin.account TO leal_portal_runtime');
+    await client.query('GRANT SELECT,INSERT,UPDATE,DELETE ON leal_admin.sessions,leal_admin.limits,leal_admin.events TO leal_portal_runtime');
+    await client.query('GRANT USAGE ON ALL SEQUENCES IN SCHEMA leal_admin TO leal_portal_runtime');
+    await client.query('GRANT SELECT ON leal_audit.integration_report,leal_audit.daily_integrations,leal_audit.operational_funnel,leal_audit.negotiations,leal_analytics.daily_funnel_v2,leal_analytics.journey_funnel_v2,leal_analytics.heatmap_cells,leal_analytics.timeline,leal_analytics.access_map TO leal_portal_runtime');
+
     await client.query('GRANT SELECT,INSERT,UPDATE ON leal_audit.actions,leal_audit.api_calls TO leal_portal_runtime');
     await client.query('GRANT EXECUTE ON FUNCTION leal_audit.purge_expired() TO leal_portal_runtime');
     await client.query('GRANT SELECT,INSERT ON leal_analytics.interactions TO leal_portal_runtime');

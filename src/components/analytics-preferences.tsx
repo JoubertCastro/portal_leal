@@ -7,6 +7,7 @@ export function AnalyticsPreferences(){
   const pathname=usePathname();
   const [available,setAvailable]=useState(false);const [open,setOpen]=useState(false);const [pending,setPending]=useState(false);const [error,setError]=useState('');
   useEffect(()=>{
+    if(pathname.startsWith('/admin')){stopTracking();return;}
     let cancelled=false;
     void fetch('/api/analytics/consent',{cache:'no-store'}).then(response=>response.json()).then(async status=>{
       if(cancelled||!status.available)return;
@@ -29,7 +30,7 @@ export function AnalyticsPreferences(){
     }catch{setError('Não foi possível salvar sua escolha. A coleta está pausada neste momento. Tente novamente.');}
     finally{setPending(false);}
   }
-  if(!available)return null;
+  if(!available||pathname.startsWith('/admin'))return null;
   return <aside className="analytics-preferences" aria-label="Preferências de estatísticas">
     {open?<div className="analytics-panel"><strong>Você escolhe como melhorar este portal</strong><p>Com sua permissão, usamos cookies próprios para entender as etapas de acesso, a origem das campanhas, a região aproximada, os resultados das consultas e os cliques nos controles para mapas de calor. Não gravamos o que você digita. Recusar não impede seu atendimento.</p><p><a data-track="components.analytics-preferences.1" href="/privacidade-estatisticas">Como usamos essas informações</a></p><div className="analytics-actions"><button data-track="components.analytics-preferences.2" type="button" disabled={pending} onClick={()=>void choose(false)}>Recusar estatísticas</button><button data-track="components.analytics-preferences.3" type="button" disabled={pending} onClick={()=>void choose(true)}>Permitir estatísticas</button></div>{error&&<p role="alert">{error}</p>}</div>:<button data-track="components.analytics-preferences.4" type="button" onClick={()=>setOpen(true)}>Preferências de estatísticas</button>}
   </aside>;

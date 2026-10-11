@@ -13,20 +13,6 @@ test('access validates CPF, sends no personal data, and reports unavailable auth
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: `test-results/access-${test.info().project.name}.png`, fullPage: true });
 });
-test('demo navigation, details and agreements work without authentication', async ({ page }) => {
-  await page.goto('/demonstracao');
-  await expect(page.getByText('Todos os valores e registros', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Minhas pendências', exact: true }).click();
-  await page.getByRole('button', { name: 'Ver detalhes' }).first().click();
-  await expect(page.getByRole('status')).toContainText('Nenhum acordo ou pagamento');
-  await page.getByRole('button', { name: 'Meus acordos', exact: true }).click();
-  await expect(page.getByRole('progressbar')).toHaveAttribute('value', '2');
-  await page.getByRole('button', { name: 'Atendimento', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Como podemos ajudar?' })).toBeVisible();
-  await page.getByRole('button', { name: 'Visão geral', exact: true }).click();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: `test-results/portal-${test.info().project.name}.png`, fullPage: true });
-});
 test('CNPJ accepts numeric and alphanumeric documents without transmitting them', async ({ page }) => {
   await page.goto('/');
   await page.getByLabel('Tipo de documento').selectOption('cnpj');

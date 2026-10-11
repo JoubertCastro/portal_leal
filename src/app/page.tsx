@@ -24,7 +24,7 @@ export default function AccessPage() {
       <figure className="hero-portrait"><Image src={heroPhoto} alt="Casal analisando suas contas juntos em casa" fill sizes="(max-width: 760px) 100vw, 50vw" priority placeholder="blur" /><figcaption><span>No seu tempo.<br /><strong>Do seu jeito.</strong></span><span className="photo-arrow" aria-hidden="true">↗</span></figcaption><div className="heritage-seal"><span>AO SEU LADO</span><strong>1981</strong><span>DESDE O INÍCIO</span></div></figure>
     </div>
     <PortalTrust />
-    <div className="experience-preview"><div><span className="eyebrow">UM PORTAL FEITO PARA VOCÊ</span><strong>Suas informações. Um só lugar.</strong><p>Conheça a experiência em uma demonstração com dados fictícios.</p></div><Link data-track="app.page.6" className="button secondary" href="/demonstracao">Explorar demonstração <UiIcon name="arrow" /></Link></div>
+    <div className="experience-preview"><div><span className="eyebrow">UM PORTAL FEITO PARA VOCÊ</span><strong>Suas informações. Um só lugar.</strong><p>Acesse suas pendências e acompanhe seus acordos com segurança.</p></div><Link data-track="app.page.6" className="button secondary" href="#cpf">Acessar meu portal <UiIcon name="arrow" /></Link></div>
     </main>
     <footer className="site-footer"><span>© {new Date().getFullYear()} Leal Assessoria · Desde 1981</span><div><a data-track="app.page.7" href="https://lealbsb.com.br/privacidade.php">Privacidade</a><a data-track="app.page.8" href="mailto:faleconosco@lealcobra.com.br">Fale conosco</a><a data-track="app.page.9" href="tel:+556134246800">(61) 3424-6800</a></div></footer>
   </div>;

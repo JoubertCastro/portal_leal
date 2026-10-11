@@ -14,6 +14,7 @@
     "test": "tsx --conditions=react-server --test tests/*.test.ts && tsx --test tests/*.test.tsx",
     "test:e2e": "playwright test",
     "db:migrate": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.database-admin.local --import tsx scripts/migrate.ts",
+    "admin:provision": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.database-admin.local --conditions=react-server --import tsx scripts/provision-admin.ts",
     "analytics:export": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.database-admin.local --import tsx scripts/export-observability.ts",
     "analytics:maintenance": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/analytics-maintenance.ts",
     "sic:check": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/check-sic.ts",
