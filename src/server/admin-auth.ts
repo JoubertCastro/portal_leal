@@ -32,6 +32,8 @@ export class AdminAuth{
  }
  async send(token:string,input?:{password:string;phone:string}){
   const session=await this.session(token);if(session.stage==='verified')throw new AdminError('invalid');
+  await this.limit('send:'+session.token_hash,10,900);
+  if(session.stage==='setup')await this.limit('enrollment-global',30,900);
   let phone:string;let passwordHash:string|null=null;
   if(session.stage==='setup'){
    if(!input||input.password.trim().length<12||input.password.length>128||/^(.)\1+$/.test(input.password)||['admin','adminadminadmin','passwordpassword','123456789012'].includes(input.password.toLowerCase()))throw new AdminError('invalid');
@@ -46,7 +48,7 @@ export class AdminAuth{
   await this.event('code_requested');await this.sender.send(phone,code);await this.event('code_accepted');
  }
  async verify(token:string,code:string){
-  const session=await this.session(token);const newToken=randomBytes(32).toString('base64url');
+  const session=await this.session(token);await this.limit('verify:'+session.token_hash,30,300);const newToken=randomBytes(32).toString('base64url');
   const result=await transaction(this.db,async c=>{
    // Account lock serializes enrollment against all concurrent bootstrap sessions.
    const a=(await c.query('SELECT * FROM leal_admin.account WHERE id=1 FOR UPDATE')).rows[0];
