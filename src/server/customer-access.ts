@@ -5,6 +5,7 @@ import type { RateLimiter } from '../domain/contracts';
 import { SicGateway, type RecordScope } from './integrations/sic';
 import { maskWhatsapp } from './integrations/sic-schema';
 import { customerAnalytics, type CustomerAnalytics } from './analytics/customer-events';
+import { auditIdentity, auditOutcome } from './audit';
 
 export class AccessError extends Error {
   constructor(public readonly code: 'invalid_request' | 'unauthenticated' | 'rate_limited' | 'unavailable') { super(`Access error: ${code}`); }
@@ -52,6 +53,7 @@ export class CustomerAccessService {
   async prepare(documentInput: string, browserToken: string, trustedNetworkKey: string, legalName?: string) {
     if (!validDocument(documentInput) || !tokenPattern.test(browserToken) || !trustedNetworkKey || trustedNetworkKey.length > 128) throw new AccessError('invalid_request');
     const document = normalizeDocument(documentInput);
+    await auditIdentity(document, false);
     // trustedNetworkKey must come from the configured reverse proxy, not arbitrary X-Forwarded-For.
     await this.limit('network', trustedNetworkKey, 20, 900_000);
     await this.limit('browser', browserToken, 5, 900_000);
@@ -62,6 +64,7 @@ export class CustomerAccessService {
     let registration;
     try { registration = await this.sic.registration(document, legalName); }
     catch(error){await this.analytics.record({name:'registration_failed',documentKind,durationMs:Math.max(0,this.now()-started)});throw error;}
+    await auditOutcome(registration.kind === 'ready' ? 'found' : registration.kind);
     await this.analytics.record({name:registration.kind==='not_found'?'registration_not_found':'registration_found',documentKind,durationMs:Math.max(0,this.now()-started)},{document,verified:false});
     if(registration.kind==='no_contacts'||registration.kind==='review_required')await this.analytics.record({name:registration.kind==='no_contacts'?'registration_no_contacts':'registration_review_required',documentKind});
     // Same public result for missing, conflicting, corporate and contactless records.
@@ -79,6 +82,7 @@ export class CustomerAccessService {
     const browserTokenHash = hash(input.browserToken);
     const selected = await this.store.claimSelection({ idHash: hash(input.selectionId), browserTokenHash, optionId: input.optionId, now });
     if (!selected) throw new AccessError('invalid_request');
+    await auditIdentity(selected.scope.document, false);
     // Destination and scope come exclusively from the stored selection.
     const result=await this.issuer.issue({ phone: selected.phone, scope: selected.scope, browserTokenHash, consent: { noticeVersion: WHATSAPP_NOTICE_VERSION, authentication: true, communications: input.communications, requestedAt: now } });
     await this.analytics.record({name:'otp_requested'});
@@ -91,6 +95,7 @@ export class CustomerAccessService {
     const now = this.now();
     if (!session || session.tokenHash !== tokenHash || session.browserTokenHash !== hash(browserToken) || session.revokedAt !== null || !Number.isFinite(session.expiresAt) || session.expiresAt <= now || !Number.isFinite(session.verifiedAt) || session.verifiedAt > now || session.verifiedAt >= session.expiresAt) throw new AccessError('unauthenticated');
     await this.limit('portfolio', tokenHash, 30, 60_000);
+    await auditIdentity(session.scope.document, true);
     return session.scope;
   }
   async portfolio(sessionToken: string, browserToken: string) {
@@ -99,6 +104,7 @@ export class CustomerAccessService {
     let debts;let agreements;let customerName;
     try{[debts,agreements,customerName]=await Promise.all([this.sic.debts(scope),this.sic.agreements(scope),this.sic.customerName(scope)]);}
     catch(error){await this.analytics.record({name:'portfolio_failed',durationMs:Math.max(0,this.now()-started)});throw error;}
+    await auditOutcome('success', { debts: debts.length, agreements: agreements.length });
     await this.analytics.record({name:'portfolio_loaded',debtCount:debts.length,agreementCount:agreements.length,durationMs:Math.max(0,this.now()-started)},{document:scope.document,verified:true});
     return { debts, agreements, customerName };
   }

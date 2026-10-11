@@ -12,12 +12,12 @@ export function WhatsappAccess({selection,onRestart}:{selection:PhoneSelection;o
       if(challenge){router.push('/portal');router.refresh();return;}setChallenge(data.challengeId);
     }catch{setError('Falha de conexão. Se você recebeu um código sem confirmação nesta página, reinicie o acesso após um minuto.');}finally{setPending(false);}}
   return <form className="access-form" onSubmit={submit}>{!challenge?<>
-    <label htmlFor="whatsapp-option">Em qual WhatsApp deseja receber o código?</label><select id="whatsapp-option" value={optionId} onChange={e=>setOption(e.target.value)} required><option value="">Selecione um telefone</option>{selection.options.map(o=><option key={o.id} value={o.id}>{o.label}</option>)}</select>
+    <label htmlFor="whatsapp-option">Em qual WhatsApp deseja receber o código?</label><select data-track="components.whatsapp-access.1" id="whatsapp-option" value={optionId} onChange={e=>setOption(e.target.value)} required><option value="">Selecione um telefone</option>{selection.options.map(o=><option key={o.id} value={o.id}>{o.label}</option>)}</select>
     <label className="auth-consent"><input type="checkbox" checked={authentication} onChange={e=>setAuthentication(e.target.checked)} required/> Quero receber um código de acesso no WhatsApp selecionado para confirmar minha identidade.</label>
     <label className="auth-consent"><input type="checkbox" checked={communications} onChange={e=>setCommunications(e.target.checked)}/> Quero receber também mensagens e comunicados da Leal pelo WhatsApp. Esta escolha é opcional e pode ser cancelada.</label>
   </>:<><label htmlFor="whatsapp-code">Código recebido no WhatsApp</label><input id="whatsapp-code" value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,'').slice(0,6))} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" minLength={6} maxLength={6} required/><p>O código vale por cinco minutos. Confira o WhatsApp selecionado.</p></>}
-    <button className="button primary" disabled={pending}>{pending?'Aguarde…':challenge?'Confirmar e acessar':'Receber código no WhatsApp'}</button>
+    <button data-track="components.whatsapp-access.2" className="button primary" disabled={pending}>{pending?'Aguarde…':challenge?'Confirmar e acessar':'Receber código no WhatsApp'}</button>
     {error&&<p className="form-message" role="alert">{error}</p>}
-    <button className="button" type="button" disabled={pending} onClick={onRestart}>Reiniciar acesso</button>
+    <button data-track="components.whatsapp-access.3" className="button" type="button" disabled={pending} onClick={onRestart}>Reiniciar acesso</button>
   </form>;
 }

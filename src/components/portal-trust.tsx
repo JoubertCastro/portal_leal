@@ -32,14 +32,14 @@ export function PortalTrust() {
     </section>
     <section id="sobre" className="company-section" aria-labelledby="company-title">
       <div className="company-history"><span className="eyebrow">EXPERIÊNCIA QUE APROXIMA</span><span className="history-year">1981<span>O início da nossa história.</span></span></div>
-      <div className="company-copy"><h2 id="company-title">Por trás da tecnologia,<br /><em>pessoas de verdade.</em></h2><p>A Leal Assessoria atua na recuperação de crédito e na negociação de dívidas. Nossa experiência e nosso atendimento caminham juntos para ajudar você a dar o próximo passo.</p><a href="https://lealbsb.com.br/sobre.php">Conheça nossa história <UiIcon name="arrow" /></a></div>
+      <div className="company-copy"><h2 id="company-title">Por trás da tecnologia,<br /><em>pessoas de verdade.</em></h2><p>A Leal Assessoria atua na recuperação de crédito e na negociação de dívidas. Nossa experiência e nosso atendimento caminham juntos para ajudar você a dar o próximo passo.</p><a data-track="components.portal-trust.1" href="https://lealbsb.com.br/sobre.php">Conheça nossa história <UiIcon name="arrow" /></a></div>
     </section>
     <section id="ajuda" className="access-faq" aria-labelledby="faq-title">
-      <div><span className="eyebrow">PODE PERGUNTAR</span><h2 id="faq-title">Mais respostas.<br /><em>Menos dúvidas.</em></h2><p className="faq-intro">E, se precisar, nossa equipe está por aqui.</p><a href="https://wa.me/5561995067834"><UiIcon name="message" />Falar com a Leal</a></div>
+      <div><span className="eyebrow">PODE PERGUNTAR</span><h2 id="faq-title">Mais respostas.<br /><em>Menos dúvidas.</em></h2><p className="faq-intro">E, se precisar, nossa equipe está por aqui.</p><a data-track="components.portal-trust.2" href="https://wa.me/5561995067834"><UiIcon name="message" />Falar com a Leal</a></div>
       <div className="access-questions">
-        <details><summary>Por que preciso confirmar minha identidade?</summary><p>Essa etapa protege o acesso às suas informações. O CPF sozinho não libera a consulta de dívidas.</p></details>
-        <details><summary>E se eu não tiver acesso ao WhatsApp cadastrado?</summary><p>Fale com a equipe Leal para receber orientação sobre a atualização do cadastro e a confirmação de identidade.</p></details>
-        <details><summary>Já tenho um acordo. Onde acompanho?</summary><p>O acompanhamento estará disponível no portal após a integração. Enquanto isso, nossa equipe pode ajudar pelos canais de atendimento.</p></details>
+        <details><summary data-track="components.portal-trust.3">Por que preciso confirmar minha identidade?</summary><p>Essa etapa protege o acesso às suas informações. O CPF sozinho não libera a consulta de dívidas.</p></details>
+        <details><summary data-track="components.portal-trust.4">E se eu não tiver acesso ao WhatsApp cadastrado?</summary><p>Fale com a equipe Leal para receber orientação sobre a atualização do cadastro e a confirmação de identidade.</p></details>
+        <details><summary data-track="components.portal-trust.5">Já tenho um acordo. Onde acompanho?</summary><p>O acompanhamento estará disponível no portal após a integração. Enquanto isso, nossa equipe pode ajudar pelos canais de atendimento.</p></details>
       </div>
     </section>
   </>;

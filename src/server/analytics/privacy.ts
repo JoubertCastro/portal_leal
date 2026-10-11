@@ -5,7 +5,13 @@ import { normalizeDocument, validDocument } from '../../domain/document';
 import { CONSENT_VERSION } from '../../domain/tracking';
 
 const token = z.object({ id: z.uuid(), kind: z.enum(['consent','journey']), expires: z.number().int(), version: z.literal(CONSENT_VERSION) }).strict();
-function secret() { const value = process.env.ANALYTICS_COOKIE_SECRET ?? ''; if (value.length < 32) throw new Error('Analytics unavailable'); return value; }
+export function analyticsSecret(kind:'cookie'|'subject') {
+  const dedicated=kind==='cookie'?process.env.ANALYTICS_COOKIE_SECRET:process.env.ANALYTICS_SUBJECT_SECRET;
+  if(dedicated&&dedicated.length>=32)return dedicated;
+  const root=process.env.AUTH_DIGEST_KEY??'';if(root.length<32)throw new Error('Analytics unavailable');
+  return createHmac('sha256',root).update('leal:analytics:v2:'+kind).digest('hex');
+}
+function secret() { return analyticsSecret('cookie'); }
 export function signTrackingToken(id: string, kind: 'consent' | 'journey', maxAge: number) {
   const body = Buffer.from(JSON.stringify({ id, kind, expires: Date.now() + maxAge * 1000, version: CONSENT_VERSION })).toString('base64url');
   return `${body}.${createHmac('sha256', secret()).update(body).digest('base64url')}`;
@@ -18,7 +24,7 @@ export function verifyTrackingToken(value: string | undefined, kind: 'consent' |
   try { const parsed = token.safeParse(JSON.parse(Buffer.from(parts[0], 'base64url').toString())); return parsed.success && parsed.data.kind === kind && parsed.data.expires > Date.now() ? parsed.data.id : null; } catch { return null; }
 }
 export function subjectKey(document: string): string {
-  const key = process.env.ANALYTICS_SUBJECT_SECRET ?? '';
+  const key = analyticsSecret('subject');
   if (key.length < 32 || !validDocument(document)) throw new Error('Invalid analytics identity');
   return `v1:${createHmac('sha256', key).update(normalizeDocument(document)).digest('hex')}`;
 }

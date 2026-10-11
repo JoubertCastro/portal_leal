@@ -1,4 +1,5 @@
 import 'server-only';
+import { auditedHttp } from '../audit';
 export class IntegrationError extends Error {
   constructor(public readonly code: 'configuration' | 'unavailable' | 'unauthorized' | 'invalid_response', public readonly diagnostic?: { kind: 'timeout' | 'network' | 'http'; status?: number; reason?: string }) {
     super(`Integration error: ${code}`);
@@ -20,8 +21,12 @@ async function safeProblem(response: Response): Promise<string | undefined> {
   finally { reader.releaseLock(); }
 }
 export async function requestJson(fetcher: Fetcher, url: string, init: RequestInit): Promise<{ status: number; body: unknown; problem?: string }> {
+  return auditedHttp(url, init, observedStatus => readJson(fetcher, url, init, observedStatus));
+}
+async function readJson(fetcher: Fetcher, url: string, init: RequestInit, observedStatus: (status: number) => void): Promise<{ status: number; body: unknown; problem?: string }> {
   try {
     const response = await fetcher(url, { ...init, redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(8_000) });
+    observedStatus(response.status);
     if (!response.ok) return { status: response.status, body: null, problem: await safeProblem(response) };
     if (!/^application\/(?:[\w.+-]+\+)?json(?:\s*;|$)/i.test(response.headers.get('content-type') ?? '')) {
       await response.body?.cancel(); throw new IntegrationError('invalid_response');

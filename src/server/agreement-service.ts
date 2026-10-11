@@ -3,6 +3,7 @@ import { AGREEMENT_NOTICE_VERSION, type AgreementOption, type AgreementQuote } f
 import { AccessError } from './customer-access';
 import { type AgreementActor, type AgreementStore } from './agreement-store';
 import type { Arc4Client } from './integrations/creditors/arc4';
+import { customerAnalytics } from './analytics/customer-events';
 
 export class AgreementError extends Error {
   constructor(public readonly code: 'configuration' | 'expired' | 'changed' | 'unknown' | 'busy') { super(`Agreement error: ${code}`); }
@@ -33,6 +34,7 @@ export class AgreementService {
       throw new AgreementError('expired');
     }
     let mutationStarted = false;
+    await customerAnalytics.record({name:'agreement_confirmation_requested'},{document:actor.document,verified:true});
     try {
       // Revalidate before any mutation, then compare the persisted offer again before formalizing.
       const fresh = await client.simulate(actor.document, contracts, saved.quote.selection);
@@ -47,10 +49,12 @@ export class AgreementService {
       }
       const created = await client.createAgreement(actor.document, contracts, { offerId: offer.offerId, installmentsCount: expected.installmentsCount, firstPaymentMethodId: offer.firstPaymentMethodId, installmentsPaymentMethodId: offer.installmentsPaymentMethodId }, this.createdBy, input.quoteId);
       await this.store.finish(input.quoteId, 'created', created.agreementId);
+      await customerAnalytics.record({name:'agreement_confirmed'},{document:actor.document,verified:true});
       return { quoteId: input.quoteId, state: 'created' as const, agreementId: created.agreementId };
     } catch (error) {
       if (error instanceof AgreementError && error.code === 'changed') throw error;
       await this.store.finish(input.quoteId, mutationStarted ? 'unknown' : 'failed').catch(() => {});
+      await customerAnalytics.record({name:mutationStarted?'agreement_confirmation_unknown':'agreement_confirmation_failed'},{document:actor.document,verified:true});
       if (mutationStarted) throw new AgreementError('unknown');
       throw error;
     }

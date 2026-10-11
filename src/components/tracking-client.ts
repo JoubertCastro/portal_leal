@@ -3,7 +3,7 @@ import type { BrowserEventName, BrowserTrackingEvent } from '@/domain/tracking';
 let enabled=false; let queue:BrowserTrackingEvent[]=[]; let timer:ReturnType<typeof setTimeout>|undefined; let sending=false; let retries=0;let generation=0;
 export function stopTracking(){generation++;enabled=false;queue=[];if(timer)clearTimeout(timer);timer=undefined;}
 export async function startTracking(){
-  if(location.pathname!=='/')return;
+  if(!['/','/portal','/demonstracao'].includes(location.pathname))return;
   try{if(localStorage.getItem('leal_analytics_block')==='1')return;}catch{}
   const attempt=generation;
   const raw=new URLSearchParams(window.location.search).get('utm_campaign');
@@ -13,7 +13,7 @@ export async function startTracking(){
   if(!response.ok||attempt!==generation) return;
   enabled=true;retries=0;track('portal_viewed');
 }
-export function track(name:BrowserEventName,attributes:Pick<BrowserTrackingEvent,'documentKind'|'durationMs'>={}){
+export function track(name:BrowserEventName,attributes:Pick<BrowserTrackingEvent,'documentKind'|'durationMs'|'interaction'>={}){
   if(!enabled||queue.length>=100) return false;
   queue.push({id:crypto.randomUUID(),name,occurredAt:new Date().toISOString(),...attributes});
   if(!timer)timer=setTimeout(()=>{timer=undefined;void flushTracking();},1000);

@@ -20,7 +20,7 @@ test('analytics requires choice, records stages without CPF and can be withdrawn
   await page.getByLabel('Seu CPF',{exact:true}).fill('');await page.getByLabel('Seu CPF',{exact:true}).fill('52998224725');
   await page.getByRole('button',{name:'Continuar com meu CPF'}).click();
   await expect.poll(()=>f.batches.flatMap(batch=>batch.events).some(event=>event.name==='access_unavailable')).toBe(true);
-  const events=f.batches.flatMap(batch=>batch.events);expect(events.some(event=>event.name==='document_completed')).toBe(true);
+  const events=f.batches.flatMap(batch=>batch.events);expect(events.some(event=>event.name==='control_clicked')).toBe(true);expect(events.some(event=>event.name==='document_completed')).toBe(true);
   expect(JSON.stringify(f.batches)).not.toContain('52998224725');expect(JSON.stringify(f.batches)).not.toContain('529.982.247-25');
   await page.getByRole('button',{name:'Preferências de estatísticas'}).click();
   await page.getByRole('button',{name:'Recusar estatísticas'}).click();

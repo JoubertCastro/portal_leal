@@ -6,5 +6,5 @@ export const metadata: Metadata = {
   description: 'Acesse o Portal do Cliente Leal para acompanhar suas pendências e seus acordos.',
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body><a className="skip" href="#conteudo">Pular para o conteúdo</a>{children}<AnalyticsPreferences /></body></html>;
+  return <html lang="pt-BR"><body><a data-track="app.layout.1" className="skip" href="#conteudo">Pular para o conteúdo</a>{children}<AnalyticsPreferences /></body></html>;
 }

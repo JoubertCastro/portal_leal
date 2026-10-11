@@ -14,7 +14,7 @@ export function AgreementConfirmation({ option, contract, creditor, expiresAt, b
   const locked = busy || expired || !accepted;
   function confirm() { if (locked || submitted.current) return; submitted.current = true; onConfirm(); }
   return <dialog ref={dialog} className="agreement-modal" aria-labelledby="agreement-title" aria-describedby="agreement-notice" onCancel={e => { e.preventDefault(); if (!busy) onCancel(); }}>
-    <div className="agreement-modal-heading"><span className="eyebrow">ÚLTIMA ETAPA</span><button type="button" className="text-button" disabled={busy} onClick={onCancel} aria-label="Fechar resumo do acordo">✕</button></div>
+    <div className="agreement-modal-heading"><span className="eyebrow">ÚLTIMA ETAPA</span><button data-track="components.agreement-confirmation.1" type="button" className="text-button" disabled={busy} onClick={onCancel} aria-label="Fechar resumo do acordo">✕</button></div>
     <h2 id="agreement-title">Vamos confirmar seu acordo?</h2><p>Confira os valores e as datas antes de continuar.</p>
     <div className="agreement-summary"><p>{creditor} · Contrato {contract}</p><span>Total do acordo</span><strong>{money(option.totalValueWithDiscount)}</strong><p>{option.installmentsCount === 1 ? 'Pagamento à vista' : `${option.installmentsCount} parcelas`} por boleto · Desconto de {money(option.totalDiscountValue)}</p></div>
     <ol className="agreement-schedule">{option.installments.map(item => <li key={item.index}><span>Parcela {item.index} · {date(item.dueDate)}</span><strong>{money(item.installmentValueWithDiscount)}</strong></li>)}</ol>
@@ -25,7 +25,7 @@ export function AgreementConfirmation({ option, contract, creditor, expiresAt, b
       <div ref={track} className={`agreement-slide ${locked ? 'is-locked' : ''}`}>
         <span aria-hidden="true">{busy ? 'Confirmando seu acordo…' : 'Arraste para fechar o acordo →'}</span>
         <div className="agreement-slide-fill" style={{ width: `${progress}%` }} />
-        <button type="button" className="agreement-slide-handle" role="slider" aria-label="Confirmar acordo: arraste para a direita" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={progress === 100 ? 'Pronto para confirmar. Pressione Enter.' : `${progress} por cento`} aria-describedby="slide-help" disabled={locked} style={{ left: `calc(${progress}% - ${progress * .58}px)` }}
+        <button data-track="components.agreement-confirmation.2" type="button" className="agreement-slide-handle" role="slider" aria-label="Confirmar acordo: arraste para a direita" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={progress === 100 ? 'Pronto para confirmar. Pressione Enter.' : `${progress} por cento`} aria-describedby="slide-help" disabled={locked} style={{ left: `calc(${progress}% - ${progress * .58}px)` }}
           onPointerDown={e => { if (locked || !track.current) return; gesture.current = { start: e.clientX, width: Math.max(1, track.current.clientWidth - 58) }; e.currentTarget.setPointerCapture(e.pointerId); setProgress(0); }}
           onPointerMove={e => { if (!gesture.current || locked) return; setProgress(Math.round(Math.max(0, Math.min(100, (e.clientX - gesture.current.start) / gesture.current.width * 100)))); }}
           onPointerUp={e => { const g = gesture.current; gesture.current = null; if (g && (e.clientX - g.start) / g.width >= .95) confirm(); else setProgress(0); }}
@@ -33,6 +33,6 @@ export function AgreementConfirmation({ option, contract, creditor, expiresAt, b
           onKeyDown={e => { if (locked) return; if (['ArrowRight', 'ArrowLeft', 'Home', 'End', 'Enter'].includes(e.key)) e.preventDefault(); if (e.key === 'ArrowRight') setProgress(Math.min(100, progress + 20)); if (e.key === 'ArrowLeft') setProgress(Math.max(0, progress - 20)); if (e.key === 'Home') setProgress(0); if (e.key === 'End') setProgress(100); if (e.key === 'Enter' && progress === 100) confirm(); }}>→</button>
       </div><p id="slide-help" className="agreement-hint">No teclado, use a seta para a direita até o final e pressione Enter.</p>
     </>}
-    <button type="button" className="text-button" disabled={busy} onClick={onCancel}>Voltar à simulação</button>
+    <button data-track="components.agreement-confirmation.3" type="button" className="text-button" disabled={busy} onClick={onCancel}>Voltar à simulação</button>
   </dialog>;
 }

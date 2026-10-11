@@ -6,6 +6,8 @@ import { arc4Bindings, Arc4Error, type Arc4Client } from './integrations/credito
 import { IntegrationError } from './integrations/http';
 import { AgreementService, AgreementError } from './agreement-service';
 import type { MetaBoletoSender } from './integrations/meta-boleto';
+import { auditIdentity } from './audit';
+import { customerAnalytics } from './analytics/customer-events';
 
 type QueryStage = 'session' | 'sic_debts' | 'binding' | 'configuration' | 'arc4_auth' | 'arc4_balances' | 'arc4_agreements' | 'arc4_policies' | 'arc4_simulation' | 'arc4_details' | 'arc4_boleto';
 export class CreditorQueryError extends Error {
@@ -44,6 +46,7 @@ export class CustomerCreditorService {
     if (!binding || !scope.internalIds.some(id => String(id) === input.debtId)) throw new AccessError('invalid_request');
     const contracts = [...new Set(bindings.map(item => item.providerContract))];
     const actor = { document: scope.document, contract: binding.providerContract, session };
+    await auditIdentity(scope.document,true,binding.providerContract,'ARC4U');
     if (input.action === 'operation') return { kind: 'json' as const, data: { operation: await this.agreements?.store.active(actor) ?? null } };
     const client = await step('configuration', () => this.provider()); // Non-ARC4 and unowned records never initialize OAuth.
     await step('arc4_auth', () => client.authenticate());
@@ -57,9 +60,11 @@ export class CustomerCreditorService {
       return { kind: 'json' as const, data: { balances, agreements: agreements.filter(item => item.contracts.includes(binding.providerContract)), policies, formalizationAvailable: this.agreements?.available ?? false, operation: await this.agreements?.store.active(actor) ?? null } };
     }
     if (input.action === 'simulate') {
+      await customerAnalytics.record({name:'simulation_requested'},{document:scope.document,verified:true});
       const data = await step('arc4_simulation', () => client.simulate(scope.document, contracts, { contract: binding.providerContract, policyCode: input.policyCode, firstPaymentDate: input.firstPaymentDate, installmentsCount: input.installmentsCount }));
       const debt = debts.find(item => item.id === input.debtId)!;
       const quote = this.agreements?.available ? await this.agreements.prepare(actor, { selection: { contract: binding.providerContract, policyCode: input.policyCode, firstPaymentDate: input.firstPaymentDate, installmentsCount: input.installmentsCount }, options: data.options, debtId: input.debtId, creditor: debt.creditor, product: debt.product }) : null;
+      await customerAnalytics.record({name:'simulation_completed'},{document:scope.document,verified:true});
       return { kind: 'json' as const, data: { ...data, ...quote, creditor: debt.creditor, product: debt.product } };
     }
     const owned = await step('arc4_agreements', () => client.agreements(scope.document, contracts));
@@ -84,6 +89,7 @@ export class CustomerCreditorService {
       try {
         const sent = await sender.send(phone, boleto.pdf, { name, amount: installment.installmentValueWithDiscount, dueDate: 'dueDate' in boleto && typeof boleto.dueDate === 'string' ? boleto.dueDate : installment.dueDate });
         await this.agreements.store.finishDelivery(key, sent.messageId);
+        await customerAnalytics.record({name:'boleto_whatsapp_accepted'},{document:scope.document,verified:true});
         return { kind: 'json' as const, data: { delivery: 'accepted' } };
       } catch {
         await this.agreements.store.finishDelivery(key).catch(() => {});
@@ -93,6 +99,7 @@ export class CustomerCreditorService {
     const boleto = await step('arc4_boleto', () => input.action === 'first-payment'
       ? client.firstPayment(scope.document, contracts, input.agreementId)
       : client.installmentPayment(scope.document, contracts, input.agreementId, input.index));
+    await customerAnalytics.record({name:'boleto_available'},{document:scope.document,verified:true});
     return { kind: 'pdf' as const, pdf: boleto.pdf };
   }
 }

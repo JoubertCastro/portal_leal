@@ -74,7 +74,8 @@ export class AnalyticsRepository {
       if (count.rows[0].n + events.length > 500) throw new TrackingError('rate_limited');
       for (const event of events) {
         if (Math.abs(Date.now() - Date.parse(event.occurredAt)) > 300_000) throw new TrackingError('invalid_event');
-        await client.query(`INSERT INTO leal_analytics.events(id,journey_id,name,source,occurred_at,document_kind,duration_ms) VALUES($1,$2,$3,'browser',$4,$5,$6) ON CONFLICT(id) DO NOTHING`, [event.id,journeyId,event.name,event.occurredAt,event.documentKind??null,event.durationMs??null]);
+        const inserted=await client.query(`INSERT INTO leal_analytics.events(id,journey_id,name,source,occurred_at,document_kind,duration_ms) VALUES($1,$2,$3,'browser',$4,$5,$6) ON CONFLICT(id) DO NOTHING RETURNING id`, [event.id,journeyId,event.name,event.occurredAt,event.documentKind??null,event.durationMs??null]);
+        if(inserted.rowCount && event.interaction)await client.query('INSERT INTO leal_analytics.interactions(event_id,attributes) VALUES($1,$2)',[event.id,JSON.stringify(event.interaction)]);
       }
       await client.query('UPDATE leal_analytics.journeys SET last_seen_at=now() WHERE id=$1', [journeyId]);
     });

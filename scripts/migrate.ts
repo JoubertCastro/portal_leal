@@ -32,6 +32,10 @@ try {
       await client.query(`CREATE ROLE leal_portal_runtime LOGIN PASSWORD '${password}' NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION CONNECTION LIMIT 15`);
       const url = new URL(process.env.DATABASE_ADMIN_URL!); url.username = 'leal_portal_runtime'; url.password = password; runtimeUrl = url.href;
     }
+    await client.query('GRANT USAGE ON SCHEMA leal_audit TO leal_portal_runtime');
+    await client.query('GRANT SELECT,INSERT,UPDATE ON leal_audit.actions,leal_audit.api_calls TO leal_portal_runtime');
+    await client.query('GRANT EXECUTE ON FUNCTION leal_audit.purge_expired() TO leal_portal_runtime');
+    await client.query('GRANT SELECT,INSERT ON leal_analytics.interactions TO leal_portal_runtime');
     await client.query('GRANT USAGE ON SCHEMA leal_analytics TO leal_portal_runtime');
     await client.query('GRANT SELECT,INSERT,UPDATE,DELETE ON leal_analytics.consents,leal_analytics.journeys,leal_analytics.rate_limits TO leal_portal_runtime');
     await client.query('GRANT SELECT,INSERT ON leal_analytics.events,leal_analytics.consent_history TO leal_portal_runtime');
@@ -45,6 +49,9 @@ try {
     await client.query('GRANT SELECT,INSERT,UPDATE ON ALL TABLES IN SCHEMA leal_creditor TO leal_portal_runtime');
     await client.query('GRANT EXECUTE ON FUNCTION leal_creditor.purge_abandoned_quotes() TO leal_portal_runtime');
     if (!(await client.query("SELECT 1 FROM pg_roles WHERE rolname='leal_analytics_reader'")).rowCount) await client.query('CREATE ROLE leal_analytics_reader NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE');
+    await client.query('GRANT USAGE ON SCHEMA leal_audit TO leal_analytics_reader');
+    await client.query('GRANT SELECT ON leal_audit.integration_report,leal_audit.daily_integrations,leal_audit.operational_funnel,leal_audit.negotiations TO leal_analytics_reader');
+    await client.query('GRANT SELECT ON leal_analytics.heatmap_cells,leal_analytics.journey_funnel_v2,leal_analytics.daily_funnel_v2 TO leal_analytics_reader');
     await client.query('GRANT USAGE ON SCHEMA leal_analytics TO leal_analytics_reader');
     await client.query('GRANT SELECT ON leal_analytics.daily_funnel,leal_analytics.journey_funnel,leal_analytics.access_map,leal_analytics.timeline,leal_analytics.campaign_funnel TO leal_analytics_reader');
   }

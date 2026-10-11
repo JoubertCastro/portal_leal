@@ -6,6 +6,8 @@ import { authReadiness, getCustomerCreditors } from '@/server/runtime';
 import { creditorRequest, CreditorQueryError } from '@/server/customer-creditors';
 import { Arc4Error } from '@/server/integrations/creditors/arc4';
 import { AgreementError } from '@/server/agreement-service';
+import { audited, auditOutcome, auditResource, type AuditAction } from '@/server/audit';
+const actions: Record<string,AuditAction> = { overview:'creditor_overview',simulate:'simulation',confirm:'agreement_confirmation',operation:'agreement_status',details:'agreement_details','first-payment':'boleto_download','installment-payment':'boleto_download','send-boleto':'boleto_whatsapp' };
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
   if (!validOrigin(request)) return apiError(403, 'ORIGIN_DENIED', 'Solicitação não permitida.');
@@ -14,7 +16,13 @@ export async function POST(request: Request) {
   try {
     const input = creditorRequest.safeParse(await authBody(request));
     if (!input.success) return apiError(400, 'INVALID_REQUEST', 'Confira a opção selecionada.');
-    const result = await getCustomerCreditors().execute(session, browser, input.data);
+    const result = await audited(actions[input.data.action],async()=>{
+      if('quoteId' in input.data)await auditResource(input.data.quoteId);
+      const result=await getCustomerCreditors().execute(session,browser,input.data);
+      if(result.kind==='json'&&'operation' in result.data&&result.data.operation)await auditOutcome(result.data.operation.state==='prepared'?'processing':result.data.operation.state);
+      if(result.kind==='json'&&'delivery' in result.data&&result.data.delivery)await auditOutcome(result.data.delivery);
+      return result;
+    },session);
     if (result.kind === 'pdf') return new Response(new Uint8Array(result.pdf), { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="boleto-leal.pdf"', 'Cache-Control': 'no-store, private', 'X-Content-Type-Options': 'nosniff' } });
     return NextResponse.json(result.data, { headers: { 'Cache-Control': 'no-store, private' } });
   } catch (error) {

@@ -3,13 +3,13 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { getDatabase } from '../database';
 import { AnalyticsRepository, TrackingError } from './repository';
-import { verifyTrackingToken } from './privacy';
+import { verifyTrackingToken,analyticsSecret } from './privacy';
 import { apiError } from '../http';
 
 export const CONSENT_COOKIE = 'leal_analytics_consent';
 export const JOURNEY_COOKIE = 'leal_analytics_journey';
 export const cookieOptions = () => ({ httpOnly: true, sameSite: 'strict' as const, secure: process.env.APP_ORIGIN?.startsWith('https://') ?? true, path: '/' });
-export function analyticsEnabled() { return process.env.ANALYTICS_ENABLED === 'true' && !!process.env.DATABASE_URL && (process.env.ANALYTICS_COOKIE_SECRET?.length ?? 0)>=32; }
+export function analyticsEnabled() { try{return process.env.ANALYTICS_ENABLED === 'true' && !!process.env.DATABASE_URL && analyticsSecret('cookie').length>=32 && analyticsSecret('subject').length>=32;}catch{return false;} }
 export function analyticsRepository() { if (!analyticsEnabled()) throw new Error('Analytics unavailable'); return new AnalyticsRepository(getDatabase()); }
 export async function trackingCookies() {
   const jar = await cookies();

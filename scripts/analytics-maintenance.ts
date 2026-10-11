@@ -3,7 +3,7 @@ import { databaseConfig } from '../src/server/database-config';
 import { AnalyticsRepository } from '../src/server/analytics/repository';
 async function main(){
 const pool=new pg.Pool(databaseConfig(process.env.DATABASE_URL??''));
-try{await new AnalyticsRepository(pool).maintain();console.log('Analytics retention completed.');}
+try{await new AnalyticsRepository(pool).maintain();await pool.query('SELECT leal_audit.purge_expired()');console.log('Analytics retention completed.');}
 catch{console.error('ANALYTICS_RETENTION_FAILED');process.exitCode=1;}
 finally{await pool.end();}
 }

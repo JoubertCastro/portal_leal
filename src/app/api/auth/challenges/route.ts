@@ -5,6 +5,7 @@ import {z} from 'zod';
 import {apiError,validOrigin} from '@/server/http';
 import {authReadiness,getCustomerAuth} from '@/server/runtime';
 import {authBody,authFailure,browserCookie,authCookieOptions} from '@/server/customer-auth-http';
+import {audited} from '@/server/audit';
 const schema=z.discriminatedUnion('action',[
   z.object({action:z.literal('prepare'),document:z.string().max(18),legalName:z.string().max(250).optional()}).strict(),
   z.object({action:z.literal('send'),selectionId:z.string().max(43),optionId:z.string().max(43),authentication:z.boolean(),communications:z.boolean(),noticeVersion:z.string().max(64)}).strict(),
@@ -21,7 +22,7 @@ export async function POST(request:Request){
     const {service}=getCustomerAuth();
     // Conservative shared global ceiling until an authenticated perimeter supplies
     // network identity. Never trust arbitrary X-Forwarded-For to evade quotas.
-    const result=parsed.data.action==='prepare'?await service.prepare(parsed.data.document,browserToken,'public-global',parsed.data.legalName):await service.requestCode({...parsed.data,browserToken});
+    const result=await audited(parsed.data.action==='prepare'?'identification':'otp_send',async()=>parsed.data.action==='prepare'?service.prepare(parsed.data.document,browserToken,'public-global',parsed.data.legalName):service.requestCode({...parsed.data,browserToken}),browserToken);
     const response=NextResponse.json(result,{headers:{'Cache-Control':'no-store'}});
     response.cookies.set(browserCookie,browserToken,{...authCookieOptions,maxAge:3600});return response;
   }catch(e){return authFailure(e);}

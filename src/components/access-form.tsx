@@ -38,12 +38,12 @@ export function AccessForm() {
   }
   if(selection)return <WhatsappAccess selection={selection} onRestart={()=>{setSelection(null);setError('');setCpf('');}}/>;
   return <form onSubmit={submit} noValidate className="access-form">
-    <div className="document-kind"><label htmlFor="document-kind">Tipo de documento</label><select id="document-kind" value={kind} onChange={event => { setKind(event.target.value as DocumentKind); setCpf(''); setError(''); setInvalid(false);tracked.current={started:false,completed:false}; }}><option value="cpf">CPF</option><option value="cnpj">CNPJ</option></select></div>
+    <div className="document-kind"><label htmlFor="document-kind">Tipo de documento</label><select data-track="components.access-form.1" id="document-kind" value={kind} onChange={event => { setKind(event.target.value as DocumentKind); setCpf(''); setError(''); setInvalid(false);tracked.current={started:false,completed:false}; }}><option value="cpf">CPF</option><option value="cnpj">CNPJ</option></select></div>
     <label htmlFor="cpf">Seu {kind.toUpperCase()}</label>
     <input ref={inputRef} id="cpf" name="document" value={cpf} onChange={event => { const value=formatDocument(event.target.value, kind);setCpf(value); setError(''); setInvalid(false);if(value&&!tracked.current.started)tracked.current.started=track('document_started',{documentKind:kind});if(validDocument(value,kind)&&!tracked.current.completed)tracked.current.completed=track('document_completed',{documentKind:kind}); }} inputMode={kind === 'cpf' ? 'numeric' : 'text'} autoCapitalize="characters" autoComplete="off" spellCheck={false} placeholder={kind === 'cpf' ? '000.000.000-00' : '00.000.000/0000-00'} maxLength={kind === 'cpf' ? 14 : 18} aria-invalid={invalid} aria-describedby={error ? 'access-hint access-error' : 'access-hint'} required />
     {kind==='cnpj'&&<><label htmlFor="legal-name">Razão social</label><input id="legal-name" value={legalName} onChange={e=>setLegalName(e.target.value)} autoComplete="organization" maxLength={250}/></>}
     <p id="access-hint" className="field-hint"><UiIcon name="message" />Confirmação pelo WhatsApp cadastrado na Leal.</p>
-    <button className="button primary" type="submit" disabled={pending}>{pending ? 'Verificando disponibilidade…' : `Continuar com meu ${kind.toUpperCase()}`}<UiIcon name="arrow" /></button>
+    <button data-track="components.access-form.2" className="button primary" type="submit" disabled={pending}>{pending ? 'Verificando disponibilidade…' : `Continuar com meu ${kind.toUpperCase()}`}<UiIcon name="arrow" /></button>
     {error && <p id="access-error" className="form-message" role="alert">{error}</p>}
     <p className="privacy-note"><UiIcon name="shield" /> Seus dados serão exibidos somente após confirmar sua identidade.</p>
   </form>;
