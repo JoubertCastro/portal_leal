@@ -149,3 +149,7 @@ Próximos gates: ativação das variáveis Railway e teste da jornada autenticad
 - Validação: build, types, lint, testes com PostgreSQL embarcado, proteção contra repetição/troca de sessão/condições alteradas, contrato da Meta e jornada desktop/mobile com provedor sintético. Uma simulação real confirmou métodos BANKSLIP para adesão e parcelas, mantendo `simulated=true`. Nenhum acordo real foi criado e nenhum boleto foi enviado a um cliente pelo agente nesta implementação.
 
 Referência do envio de documento: [Meta — Document Media Object](https://whatsapp.github.io/WhatsApp-Nodejs-SDK/api-reference/types/DocumentMediaObject/).
+
+### Formato permitido de parcelamento
+
+As novas ofertas devem ter parcelas iguais ou primeira parcela maior e demais parcelas iguais entre si. O adapter verifica os valores em centavos, ordenados por vencimento, tanto na simulação quanto na oferta persistida antes de criar o acordo. Não há tolerância de um centavo nem redistribuição local de valores. A regra não altera acordos já existentes.

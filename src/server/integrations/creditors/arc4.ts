@@ -5,7 +5,7 @@ import { IntegrationError, requestJson, type Fetcher } from '../http';
 import type { CreditorBalance, CreditorBinding, CreditorProvider } from './registry';
 import type { CustomerDebt } from '../sic';
 import { policiesSchema, simulationSchema, persistedOfferSchema, apiDate, installmentSchema, firstPaymentSchema, installmentPaymentSchema, decodeBoleto } from './arc4-schemas';
-import type { AgreementSelection } from '../../../domain/agreement';
+import { hasAllowedInstallmentShape, type AgreementSelection } from '../../../domain/agreement';
 
 export const ARC4_TOKEN_URL = 'https://btg-agreement.auth.sa-east-1.amazoncognito.com/oauth2/token';
 export const ARC4_BASE_URL = 'https://agreements-api.btgpactual.com/v2/negotiation';
@@ -199,6 +199,8 @@ export class Arc4Client implements CreditorProvider {
     if (!parsed.success || parsed.data.document !== document || parsed.data.offer.contracts.length !== 1 || parsed.data.offer.contracts[0] !== input.contract) throw new IntegrationError('invalid_response');
     const options = parsed.data.offer.installmentOptions;
     if (options.some(option => option.installmentsCount !== input.installmentsCount || option.installments.length !== option.installmentsCount || new Set(option.installments.map(item => item.index)).size !== option.installments.length)) throw new IntegrationError('invalid_response');
+    // Apply to both simulations and persisted offers, before an agreement can be created.
+    if (options.some(option => !hasAllowedInstallmentShape(option))) throw new Arc4Error('invalid_selection');
     return { contract: input.contract, options, raw: result.body };
   }
   async simulate(document: string, authorizedContracts: readonly string[], input: AgreementSelection) {
