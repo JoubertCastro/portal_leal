@@ -16,5 +16,5 @@ export function hasAllowedInstallmentShape(option: AgreementOption): boolean {
   return cents[0] >= cents[1] && cents.slice(1).every(value => value === cents[1]);
 }
 export interface AgreementQuote { selection: AgreementSelection; options: AgreementOption[]; creditor: string; product: string; debtId: string }
-export type AgreementState = 'prepared' | 'processing' | 'unknown' | 'changed' | 'failed' | 'created';
+export type AgreementState = 'prepared' | 'processing' | 'unknown' | 'changed' | 'failed' | 'created' | 'cancelled';
 export interface AgreementOperation { quoteId: string; state: AgreementState; agreementId?: string }

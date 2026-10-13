@@ -19,6 +19,7 @@ test('durable consent, isolation, duplicate protection, changed terms and ambigu
   const pg = new PGlite();
   try {
     await pg.exec(await readFile('migrations/004_creditor_agreements.sql', 'utf8'));
+    await pg.exec(await readFile('migrations/010_agreement_cancellation.sql', 'utf8'));
     const query = async (text: string, values?: unknown[]) => { const r = await pg.query(text, values); return { ...r, rowCount: r.rows.length || r.affectedRows || 0 }; };
     const db = { query, connect: async () => ({ query, release() {} }) } as unknown as Pool;
     const store = new AgreementStore(db, 'a'.repeat(64), 'b'.repeat(64));
@@ -36,6 +37,18 @@ test('durable consent, isolation, duplicate protection, changed terms and ambigu
     const rows = await pg.query<{ payload: string; result_payload: string; accepted_at: string; notice_version: string }>('SELECT * FROM leal_creditor.quotes WHERE id=$1', [prepared.quoteId]);
     assert.ok(rows.rows[0].accepted_at); assert.equal(rows.rows[0].notice_version, AGREEMENT_NOTICE_VERSION);
     assert.ok(!rows.rows[0].payload.includes(actor.contract)); assert.ok(!rows.rows[0].result_payload.includes(agreementId));
+    const activeClient = { agreementDetail: async () => ({ statusCode: 'VALIDATED' }) } as unknown as Arc4Client;
+    assert.equal((await service.reconcile(actor, [actor.contract], activeClient))?.state, 'created');
+    const missingClient = { agreementDetail: async () => { throw new Error('not_found'); } } as unknown as Arc4Client;
+    await assert.rejects(service.reconcile(actor, [actor.contract], missingClient), /not_found/);
+    assert.equal((await store.active(actor))?.state, 'created');
+    const cancelledClient = { agreementDetail: async () => ({ statusCode: 'CANCELED' }) } as unknown as Arc4Client;
+    assert.equal(await service.reconcile(actor, [actor.contract], cancelledClient), null);
+    assert.equal((await store.get(actor, prepared.quoteId)).state, 'cancelled');
+    assert.equal((await store.get(actor, prepared.quoteId)).operation.agreementId, agreementId);
+    assert.equal((await service.confirm(actor, [actor.contract], client, input)).state, 'cancelled');
+    assert.equal(mutations, 1, 'old consent must never create a replacement agreement');
+    assert.equal(await store.claim({ ...actor, session: 'new-login' }, second.quoteId, 0), true);
     const changedActor = { ...actor, contract: 'CN-CHANGED' }; const changedQuote = { ...quote, selection: { ...quote.selection, contract: changedActor.contract } };
     const changed = await service.prepare(changedActor, changedQuote);
     const changedClient = { ...client, simulate: async () => ({ options: [{ ...option, totalValueWithDiscount: 101 }] }) } as unknown as Arc4Client;

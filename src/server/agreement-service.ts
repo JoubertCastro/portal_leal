@@ -19,6 +19,17 @@ export class AgreementService {
   constructor(readonly store: AgreementStore, private createdBy: string) {}
   get available() { return /^[A-Za-z0-9_.-]{1,128}$/.test(this.createdBy); }
   async prepare(actor: AgreementActor, quote: AgreementQuote) { return this.store.prepare(actor, quote); }
+  async reconcile(actor: AgreementActor, contracts: string[], client: Arc4Client) {
+    const operation = await this.store.active(actor);
+    if (operation?.state !== 'created' || !operation.agreementId) return operation;
+    // A missing agreement, timeout or unknown status is not proof of cancellation.
+    const detail = await client.agreementDetail(actor.document, contracts, operation.agreementId);
+    if (detail.statusCode === 'CANCELED') {
+      await this.store.markCancelled(actor, operation);
+      return this.store.active(actor);
+    }
+    return operation;
+  }
   async confirm(actor: AgreementActor, contracts: string[], client: Arc4Client, input: { quoteId: string; optionIndex: number; accepted: true; noticeVersion: string; debtId: string }) {
     if (!this.available) throw new AgreementError('configuration');
     if (input.accepted !== true || input.noticeVersion !== AGREEMENT_NOTICE_VERSION) throw new AccessError('invalid_request');

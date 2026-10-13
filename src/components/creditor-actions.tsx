@@ -62,7 +62,7 @@ export function CreditorActions({ debtId, agreementsOnly = false }: { debtId: st
   async function loadAgreement(agreementId: string) {
     setDetail(null); setDelivery(''); clearPdf();
     const result = await request('details', { agreementId }) as Detail | undefined;
-    if (result) setDetail(result);
+    if (result) { setDetail(result); if (result.statusCode === 'CANCELED') { setOperation(null); setSimulation(null); } }
     return result;
   }
   async function confirm() {
@@ -70,7 +70,7 @@ export function CreditorActions({ debtId, agreementsOnly = false }: { debtId: st
     const quoteId = simulation.quoteId;
     const result = await request('confirm', { quoteId, optionIndex: confirmIndex, accepted: true, noticeVersion: simulation.noticeVersion ?? AGREEMENT_NOTICE_VERSION }) as { operation: AgreementOperation } | undefined;
     setConfirmIndex(null);
-    if (result) { setOperation(result.operation); if (result.operation.agreementId) {
+    if (result) { if (result.operation.state === 'cancelled') { await load(); return; } setOperation(result.operation); if (result.operation.agreementId) {
       const created = await loadAgreement(result.operation.agreementId);
       if (created?.statusCode === 'VALIDATED' && !created.installments.some(i => i.status === 'PAID')) await request('first-payment', { agreementId: result.operation.agreementId }, 'view');
     } }
@@ -89,7 +89,7 @@ export function CreditorActions({ debtId, agreementsOnly = false }: { debtId: st
   return <section className="creditor-actions" aria-label="Serviços ARC4U" aria-busy={busy}>
     <button data-track="components.creditor-actions.1" className="button secondary" disabled={busy} onClick={load}>{busy ? 'Consultando…' : overview ? 'Atualizar consulta ARC4U' : agreementsOnly ? 'Consultar acordos e boletos ARC4U' : 'Consultar condições e boletos ARC4U'}</button>
     {error && <p role="alert">{error}</p>}
-    {operation && <div className="agreement-operation" role="status"><h4>{operation.state === 'created' ? 'Acordo registrado' : 'Acompanhamento da confirmação'}</h4><p>{operation.state === 'created' ? 'Seu acordo foi registrado no credor. Confira abaixo a situação e a disponibilidade do boleto.' : 'Sua confirmação está em acompanhamento. Não confirme outro acordo para este contrato. Se o resultado continuar pendente, fale com nossos especialistas.'}</p>{operation.agreementId ? <button data-track="components.creditor-actions.2" className="button secondary" disabled={busy} onClick={() => void loadAgreement(operation.agreementId!)}>Consultar boleto do acordo</button> : <button data-track="components.creditor-actions.3" className="button secondary" disabled={busy} onClick={async () => { const result = await request('operation') as { operation: AgreementOperation | null } | undefined; if (result?.operation) setOperation(result.operation); }}>Atualizar acompanhamento</button>}</div>}
+    {operation && <div className="agreement-operation" role="status"><h4>{operation.state === 'created' ? 'Acordo registrado' : 'Acompanhamento da confirmação'}</h4><p>{operation.state === 'created' ? 'Seu acordo foi registrado no credor. Confira abaixo a situação e a disponibilidade do boleto.' : 'Sua confirmação está em acompanhamento. Não confirme outro acordo para este contrato. Se o resultado continuar pendente, fale com nossos especialistas.'}</p>{operation.agreementId ? <button data-track="components.creditor-actions.2" className="button secondary" disabled={busy} onClick={() => void loadAgreement(operation.agreementId!)}>Consultar boleto do acordo</button> : <button data-track="components.creditor-actions.3" className="button secondary" disabled={busy} onClick={async () => { const result = await request('operation') as { operation: AgreementOperation | null } | undefined; if (result) setOperation(result.operation); }}>Atualizar acompanhamento</button>}</div>}
     {overview && <div className="creditor-result">
       {!agreementsOnly && <>
         {!overview.balances.length && <p>Nenhuma dívida disponível para nova negociação nesta consulta ao credor. Confira os acordos abaixo.</p>}

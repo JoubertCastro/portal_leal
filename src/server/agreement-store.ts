@@ -52,6 +52,11 @@ export class AgreementStore {
       return !!r.rowCount;
     });
   }
+  async markCancelled(actor: AgreementActor, operation: AgreementOperation) {
+    const [subject, target] = this.keys(actor);
+    // Preserve the accepted quote and encrypted result as historical evidence.
+    await this.db.query("UPDATE leal_creditor.quotes SET state='cancelled',cancelled_at=now() WHERE id=$1 AND subject_key=$2 AND target_key=$3 AND state='created'", [operation.quoteId, subject, target]);
+  }
   async saveOffer(id: string, offerId: string) { await this.db.query("UPDATE leal_creditor.quotes SET offer_payload=$2 WHERE id=$1 AND state='processing'", [id, this.seal({ offerId }, 'offer:' + id)]); }
   async finish(id: string, state: 'created' | 'changed' | 'failed' | 'unknown', agreementId?: string) {
     await this.db.query("UPDATE leal_creditor.quotes SET state=$2,result_payload=$3 WHERE id=$1 AND state='processing'", [id, state, agreementId ? this.seal({ agreementId }, 'result:' + id) : null]);

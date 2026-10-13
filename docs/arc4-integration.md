@@ -153,3 +153,7 @@ Referência do envio de documento: [Meta — Document Media Object](https://what
 ### Formato permitido de parcelamento
 
 As novas ofertas devem ter parcelas iguais ou primeira parcela maior e demais parcelas iguais entre si. O adapter verifica os valores em centavos, ordenados por vencimento, tanto na simulação quanto na oferta persistida antes de criar o acordo. Não há tolerância de um centavo nem redistribuição local de valores. A regra não altera acordos já existentes.
+
+### Cancelamento externo
+
+Ao consultar ou confirmar uma negociação registrada, o portal reconsulta o detalhe do acordo na ARC4. Somente o status explícito `CANCELED` encerra o bloqueio local, marcando a cotação como `cancelled` e registrando `cancelled_at`, sem apagar o aceite ou o identificador do acordo. Falhas de consulta, ausência do acordo e status desconhecidos não liberam o contrato. Uma nova contratação exige nova simulação e novo aceite; repetir a confirmação antiga retorna o estado cancelado.

@@ -47,9 +47,12 @@ export class CustomerCreditorService {
     const contracts = [...new Set(bindings.map(item => item.providerContract))];
     const actor = { document: scope.document, contract: binding.providerContract, session };
     await auditIdentity(scope.document,true,binding.providerContract,'ARC4U');
-    if (input.action === 'operation') return { kind: 'json' as const, data: { operation: await this.agreements?.store.active(actor) ?? null } };
     const client = await step('configuration', () => this.provider()); // Non-ARC4 and unowned records never initialize OAuth.
     await step('arc4_auth', () => client.authenticate());
+    if (['operation', 'overview', 'confirm', 'details'].includes(input.action) && this.agreements) {
+      await step('arc4_details', () => this.agreements!.reconcile(actor, contracts, client));
+    }
+    if (input.action === 'operation') return { kind: 'json' as const, data: { operation: await this.agreements?.store.active(actor) ?? null } };
     if (input.action === 'confirm') {
       if (!this.agreements) throw new AgreementError('configuration');
       return { kind: 'json' as const, data: { operation: await this.agreements.confirm(actor, contracts, client, input) } };
