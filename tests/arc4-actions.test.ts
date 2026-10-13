@@ -67,6 +67,30 @@ test('simulation revalidates balances/policy and forces non-persistence with zer
   assert.equal(posts, 1);
 });
 
+test('installment simulation and persisted offer use the same zero separate entry and preserve creditor amounts', async () => {
+  const seen: boolean[] = [];
+  const option = { ...simulation.offer.installmentOptions[0], installmentsCount: 2, totalValueWithDiscount: 120,
+    installments: [{ index: 1, dueDate: date, installmentValueWithDiscount: 60 }, { index: 2, dueDate: '2026-11-09T00:00:00', installmentValueWithDiscount: 60 }] };
+  const client = new Arc4Client(credentials, async (url, init) => {
+    if (url === ARC4_TOKEN_URL) return token();
+    const path = new URL(String(url)).pathname;
+    if (path.endsWith('/balance')) return json({ document, totalContracts: 1, customerBalance: { products: [{ contract, name: 'Produto', balance: { curveValue: 100 } }] } });
+    if (path.endsWith('/policies')) return json([{ ...policy, minimumEntryAmount: 110 }]);
+    assert.ok(path.endsWith('/offers'));
+    const body = JSON.parse(String(init?.body));
+    assert.equal(body.installmentEntry, 0);
+    assert.equal(body.installmentsCount, 2);
+    for (const flag of ['overlimitDiscountRequest', 'ignoreExistingForSimulation', 'ignoreInputValueValidationForSimulation', 'skipBillingValidation']) assert.equal(body[flag], false);
+    seen.push(body.simulated);
+    return json({ document, offer: { contracts: [contract], installmentOptions: [option], id: otherId, status: 'OPEN', overlimitDiscountRequest: false,
+      firstPaymentOptions: [{ id: 1, name: 'BANKSLIP' }], installmentsPaymentOptions: [{ id: 1, name: 'BANKSLIP' }] } });
+  });
+  const selection = { ...input, installmentsCount: 2 };
+  assert.deepEqual((await client.simulate(document, [contract], selection)).options, [option]);
+  assert.deepEqual((await client.persistOffer(document, [contract], selection)).options, [option]);
+  assert.deepEqual(seen, [true, false]);
+});
+
 test('simulation never retries an ambiguous POST and rejects another contract in the response', async () => {
   for (const response of ['outage', 'wrong_contract']) {
     let posts = 0;

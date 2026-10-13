@@ -184,7 +184,9 @@ export class Arc4Client implements CreditorProvider {
     const result = await requestJson(this.fetcher, `${ARC4_BASE_URL}/customers/${document}/offers`, {
       method: 'POST', headers: { Authorization: `Bearer ${await this.token()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ contracts: [input.contract], policyCode: policy.code, firstPaymentDate: input.firstPaymentDate,
-        installmentsCount: input.installmentsCount, installmentEntry: input.installmentsCount === 1 ? 0 : policy.minimumEntryAmount,
+        // No separate down payment was selected. Let ARC4 calculate the schedule;
+        // minimumEntryAmount is a policy constraint, not a customer-selected entry.
+        installmentsCount: input.installmentsCount, installmentEntry: 0,
         simulated, overlimitDiscountRequest: false, ignoreExistingForSimulation: false,
         ignoreInputValueValidationForSimulation: false, skipBillingValidation: false }),
     });
